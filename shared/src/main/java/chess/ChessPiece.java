@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -10,7 +11,15 @@ import java.util.Collection;
  */
 public class ChessPiece {
 
+    //1) The chess piece has these two characteristics, this goes inside the class
+    private final ChessGame.TeamColor pieceColor;
+    private final ChessPiece.PieceType pieceType;
+
+    //this is the constructor, it has public and the name of the MAIN class (methods have a return)
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
+       //2) We add them to the constructor
+        this.pieceColor = pieceColor;
+        this.pieceType = type;
     }
 
     /**
@@ -29,14 +38,16 @@ public class ChessPiece {
      * @return Which team this chess piece belongs to
      */
     public ChessGame.TeamColor getTeamColor() {
-        throw new RuntimeException("Not implemented");
+        //3) return color to know which color is it during the game (this will be used outside the class)
+        return pieceColor;
     }
 
     /**
      * @return which type of chess piece this piece is
      */
     public PieceType getPieceType() {
-        throw new RuntimeException("Not implemented");
+        //4) return
+        return pieceType;
     }
 
     /**
@@ -47,6 +58,7 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        throw new RuntimeException("Not implemented");
+        return new ArrayList<>();
+        /*change here*/
     }
 }

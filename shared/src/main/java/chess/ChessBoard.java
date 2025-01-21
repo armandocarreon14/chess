@@ -10,6 +10,8 @@ import java.util.Objects;
  * signature of the existing methods.
  */
 public class ChessBoard {
+
+
     private ChessPiece[][] squares = new ChessPiece[8][8];
     public ChessBoard() {
         
@@ -37,6 +39,9 @@ public class ChessBoard {
     public ChessPiece getPiece(ChessPosition position) {
         return squares[position.getRow()-1][position.getColumn()-1];
     }
+
+
+    //--------------------------------------------------------------------
     //OBJECTS OVERRIDE
     @Override
     public boolean equals(Object o) {
@@ -51,6 +56,8 @@ public class ChessBoard {
     public int hashCode() {
         return Arrays.deepHashCode(squares);
     }
+    //--------------------------------------------------------------------
+
 
     /**
      * Sets the board to the default starting board

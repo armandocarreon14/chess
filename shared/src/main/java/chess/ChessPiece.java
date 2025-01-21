@@ -12,7 +12,7 @@ import java.util.Objects;
  */
 public class ChessPiece {
 
-
+    //--------------------------------------------------------------------
     //OBJECT OVERRIDE
     @Override
     public boolean equals(Object o) {
@@ -28,6 +28,9 @@ public class ChessPiece {
         return Objects.hash(pieceColor, pieceType);
     }
     //
+    //--------------------------------------------------------------------
+
+
 
     //1) The chess piece has these two characteristics, this goes inside the class
     private final ChessGame.TeamColor pieceColor;
@@ -75,6 +78,10 @@ public class ChessPiece {
      *
      * @return Collection of valid moves
      */
+
+    //calculates potential moves
+    //we check if there is a piece
+
 
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         return new ArrayList<>();

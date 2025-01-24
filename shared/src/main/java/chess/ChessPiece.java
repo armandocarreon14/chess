@@ -368,11 +368,23 @@ public class ChessPiece {
 
             // Moving one
             ChessPosition oneMove = new ChessPosition(myPosition.getRow() + direction, myPosition.getColumn());
+
             if (oneMove.getRow() >= 1 && oneMove.getRow() <= 8 && board.getPiece(oneMove) == null) {
-                possibleMoves.add(new ChessMove(myPosition, oneMove, null));
+                //if it lands on the last/first row
+                if ((pieceColor == ChessGame.TeamColor.WHITE && oneMove.getRow() == 8) ||
+                        (pieceColor == ChessGame.TeamColor.BLACK && oneMove.getRow() == 1)) {
+                    possibleMoves.add(new ChessMove(myPosition, oneMove, PieceType.ROOK));
+                    possibleMoves.add(new ChessMove(myPosition, oneMove, PieceType.KNIGHT));
+                    possibleMoves.add(new ChessMove(myPosition, oneMove, PieceType.BISHOP));
+                    possibleMoves.add(new ChessMove(myPosition, oneMove, PieceType.QUEEN));
 
+                }
+                else {
+                    possibleMoves.add(new ChessMove(myPosition, oneMove, null));
+                }
 
-                // Moving two
+                    // Moving two
+                //if it is in starting position
                 if ((pieceColor == ChessGame.TeamColor.WHITE && myPosition.getRow() == 2) ||
                         (pieceColor == ChessGame.TeamColor.BLACK && myPosition.getRow() == 7)) {
                     ChessPosition twoStepsForward = new ChessPosition(myPosition.getRow() + 2 * direction, myPosition.getColumn());
@@ -394,20 +406,31 @@ public class ChessPiece {
                         targetPosition.getColumn() >= 1 && targetPosition.getColumn() <= 8) {
                     //get the piece that is in target position
                     ChessPiece targetPiece = board.getPiece(targetPosition);
-                    //add the piece if the space is empty or if it's of the enemy team
+
+
                     if (targetPiece != null && targetPiece.getTeamColor() != pieceColor) {
-                        possibleMoves.add(new ChessMove(myPosition, targetPosition, null));
+
+                        if ((pieceColor == ChessGame.TeamColor.WHITE && targetPosition.getRow() == 8) ||
+                            (pieceColor == ChessGame.TeamColor.BLACK && targetPosition.getRow() == 1)) {
+
+                        possibleMoves.add(new ChessMove(myPosition, targetPosition, PieceType.ROOK));
+                        possibleMoves.add(new ChessMove(myPosition, targetPosition, PieceType.KNIGHT));
+                        possibleMoves.add(new ChessMove(myPosition, targetPosition, PieceType.BISHOP));
+                        possibleMoves.add(new ChessMove(myPosition, targetPosition, PieceType.QUEEN));
+
+                        }
+                        else {
+                            possibleMoves.add(new ChessMove(myPosition, targetPosition, null));
+
+                        }
+
                     }
+
+                    //break;
+
                 }
             }
         }
-
-
-
-
-    //2) calculate
-    // ** create in the beginning the collection Collection<ChessMove> name = new ArrayList<>();
-    //3) return a collection of possible chess moves = arraylist
 
         return possibleMoves;
 }

@@ -1,6 +1,9 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Objects;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -9,6 +12,20 @@ import java.util.Collection;
  * signature of the existing methods.
  */
 public class ChessGame {
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ChessGame chessGame = (ChessGame) o;
+        return gameOver == chessGame.gameOver && teamTurn == chessGame.teamTurn && Objects.equals(board, chessGame.board);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(teamTurn, board, gameOver);
+    }
 
     private TeamColor teamTurn;
     private ChessBoard board;
@@ -54,8 +71,31 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        ChessPiece myPiece = board.getPiece(startPosition);
+        if (myPiece == null) {
+            return null;
+        }
+
+        Collection<ChessMove> potentialMovesCollection = board.getPiece(startPosition).pieceMoves(board, startPosition);
+        HashSet<ChessMove> potentialMoves = new HashSet<>(potentialMovesCollection);
+        HashSet<ChessMove> validMoves = new HashSet<>(potentialMoves.size());
+
+        for (ChessMove move : potentialMoves) {
+            ChessPiece targetPiece = board.getPiece(move.getEndPosition());
+            board.addPiece(startPosition, null);
+            board.addPiece(move.getEndPosition(), myPiece);
+
+            if (!isInCheck(myPiece.getTeamColor())) {
+                validMoves.add(move);
+            }
+
+            board.addPiece(move.getEndPosition(), targetPiece);
+            board.addPiece(startPosition, myPiece);
+        }
+
+        return validMoves;
     }
+
 
     /**
      * Makes a move in a chess game
@@ -96,7 +136,25 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        for (int row = 1; row < 9; row ++){
+            for(int col = 1; col < 9; col ++){
+                ChessPosition myPosition = new ChessPosition(row, col);
+                ChessPiece myPiece = board.getPiece(myPosition);
+
+                Collection<ChessMove> moves;
+
+                //If the square is not empty AND the piece is part of my team
+                if(myPiece != null && teamColor == myPiece.getTeamColor()){
+                    moves = validMoves(myPosition);
+                    //If there is one valid move or if moves is not empty, it means it is not stalemate
+                    if(moves != null && !moves.isEmpty()){
+                        return false;
+                    }
+                }
+
+            }
+        }
+        return  true;
     }
 
     /**
@@ -116,4 +174,5 @@ public class ChessGame {
     public ChessBoard getBoard() {
         return board;
     }
+
 }

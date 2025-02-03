@@ -423,10 +423,7 @@ public class ChessPiece {
                             possibleMoves.add(new ChessMove(myPosition, targetPosition, null));
 
                         }
-
                     }
-
-
                 }
             }
         }

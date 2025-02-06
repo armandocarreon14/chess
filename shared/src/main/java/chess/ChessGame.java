@@ -135,6 +135,26 @@ public class ChessGame {
             }
         }
 
+        //Check if any enemy piece can attack the king
+        for (int row = 1; row <= 8; row ++){
+            for(int column = 1; column <= 8; column ++){
+                ChessPiece enemyPiece = board.getPiece(new ChessPosition(row, column));
+                if (enemyPiece == null || enemyPiece.getTeamColor() == teamColor){
+                    continue;
+                }
+
+                //Check if an enemy piece can make a new move (from the peicemoves list)
+                for(ChessMove potentialEnemyMove : enemyPiece.pieceMoves(board, new ChessPosition(row, column))){
+                    //If the enemyPiece kills my king
+                    if (potentialEnemyMove.getEndPosition().equals(kingPosition)){
+                        return  true;
+                    }
+                }
+
+            }
+        }
+        //There is no pieces that would put the king in danger
+        return false;
     }
 
     /**

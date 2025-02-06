@@ -60,7 +60,8 @@ public class ChessGame {
      */
     public enum TeamColor {
         WHITE,
-        BLACK
+        BLACK;
+
     }
 
     /**
@@ -76,20 +77,25 @@ public class ChessGame {
             return null;
         }
 
+        //Collection of potential moves from piecemoves. I get the piece at start position, and then apply it to the piece moves list
         Collection<ChessMove> potentialMovesCollection = board.getPiece(startPosition).pieceMoves(board, startPosition);
+        //Hashsets
         HashSet<ChessMove> potentialMoves = new HashSet<>(potentialMovesCollection);
         HashSet<ChessMove> validMoves = new HashSet<>(potentialMoves.size());
 
-        for (ChessMove move : potentialMoves) {
-            ChessPiece targetPiece = board.getPiece(move.getEndPosition());
+        for (ChessMove possibleMove : potentialMoves) {
+            ChessPiece targetPiece = board.getPiece(possibleMove.getEndPosition());
+            //Start simulation, remove the current piece and move to a new spot
             board.addPiece(startPosition, null);
-            board.addPiece(move.getEndPosition(), myPiece);
+            board.addPiece(possibleMove.getEndPosition(), myPiece);
 
+            //Check if the king is safe from being captured
             if (!isInCheck(myPiece.getTeamColor())) {
-                validMoves.add(move);
+                validMoves.add(possibleMove);
             }
 
-            board.addPiece(move.getEndPosition(), targetPiece);
+            //Bring the original board back
+            board.addPiece(possibleMove.getEndPosition(), targetPiece);
             board.addPiece(startPosition, myPiece);
         }
 

@@ -1,6 +1,5 @@
 package chess;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
@@ -13,6 +12,7 @@ import java.util.Objects;
  */
 
 public class ChessGame {
+
 
     @Override
     public boolean equals(Object o) {
@@ -252,12 +252,13 @@ public class ChessGame {
                 Collection<ChessMove> moves;
 
                 //If the square is not empty AND the piece is part of my team
-                if(targetPiece != null && teamColor == targetPiece.getTeamColor()){
+                if(targetPiece != null && teamColor == targetPiece.getTeamColor()) {
                     moves = validMoves(targetPosition);
                     //There needs to be no valid moves to validate the stalemate
-                    if(moves != null && !moves.isEmpty()){
+                    if (moves != null && !moves.isEmpty()) {
                         return false;
                     }
+                }
                 }
             }
             return true;

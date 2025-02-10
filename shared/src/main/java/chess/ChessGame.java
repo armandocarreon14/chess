@@ -199,32 +199,9 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
+        //Returns true if the given team has no way to protect their king from being captured.
         // Check if the team is in check
-        if (!isInCheck(teamColor)) {
-            return false;
-        }
 
-        // Check if there are any valid moves for the team
-        for (int row = 1; row <= 8; row++) {
-            for (int col = 1; col <= 8; col++) {
-                ChessPosition position = new ChessPosition(row, col);
-                ChessPiece piece = board.getPiece(position);
-
-                // Check if the spot is empty or if it's from the opposite team
-                if (piece == null || piece.getTeamColor() != teamColor) {
-                    continue;
-                }
-
-                // If the piece has valid moves, it's not checkmate
-                Collection<ChessMove> moves = validMoves(position);
-                if (moves != null && !moves.isEmpty()) {
-                    return false;
-                }
-            }
-        }
-
-        // If no moves can resolve the check then it is a checkmate
-        return true;
     }
 
     /**

@@ -222,8 +222,6 @@ public class ChessGame {
                 if (moves != null && !moves.isEmpty()) {
                     return false;
                 }
-
-
             }
         }
 
@@ -239,29 +237,23 @@ public class ChessGame {
      */
     public boolean isInStalemate(TeamColor teamColor) {
 
+        //Returns true if the given team has no legal moves but their king is not in immediate danger.
+
+        //Check if the team is in check. A team in check cannot be in stalemate
         if (isInCheck(teamColor)) {
             return false;
         }
 
         for (int row = 1; row < 9; row ++){
-            for(int col = 1; col < 9; col ++){
-                ChessPosition myPosition = new ChessPosition(row, col);
-                ChessPiece myPiece = board.getPiece(myPosition);
+            for (int column = 1; column < 9; column ++){
+                ChessPosition targetPosition = new ChessPosition(row, column);
+                ChessPiece targetPiece = board.getPiece(targetPosition);
 
                 Collection<ChessMove> moves;
 
-                //If the square is not empty AND the piece is part of my team
-                if(myPiece != null && teamColor == myPiece.getTeamColor()){
-                    moves = validMoves(myPosition);
-                    //If there is one valid move or if moves is not empty, it means it is not stalemate
-                    if(moves != null && !moves.isEmpty()){
-                        return false;
-                    }
-                }
+                //If the square
             }
         }
-        return  true;
-    }
 
     /**
      * Sets this game's chessboard with a given board

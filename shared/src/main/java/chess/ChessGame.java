@@ -81,34 +81,7 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        ChessPiece myPiece = board.getPiece(startPosition);
-        if (myPiece == null) {
-            return null;
-        }
 
-        //Collection of potential moves from piecemoves. I get the piece at start position, and then apply it to the piece moves list
-        Collection<ChessMove> potentialMovesCollection = board.getPiece(startPosition).pieceMoves(board, startPosition);
-        //Hashsets
-        HashSet<ChessMove> potentialMoves = new HashSet<>(potentialMovesCollection);
-        HashSet<ChessMove> validMoves = new HashSet<>(potentialMoves.size());
-
-        for (ChessMove possibleMove : potentialMoves) {
-            ChessPiece targetPiece = board.getPiece(possibleMove.getEndPosition());
-            //Start simulation, remove the current piece and move to a new spot
-            board.addPiece(startPosition, null);
-            board.addPiece(possibleMove.getEndPosition(), myPiece);
-
-            //Check if the king is safe from being captured
-            if (!isInCheck(myPiece.getTeamColor())) {
-                validMoves.add(possibleMove);
-            }
-
-            //Bring the original board back
-            board.addPiece(possibleMove.getEndPosition(), targetPiece);
-            board.addPiece(startPosition, myPiece);
-        }
-
-        return validMoves;
     }
 
 

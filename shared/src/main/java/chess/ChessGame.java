@@ -200,8 +200,24 @@ public class ChessGame {
      */
     public boolean isInCheckmate(TeamColor teamColor) {
         //Returns true if the given team has no way to protect their king from being captured.
-        // Check if the team is in check
 
+        //Important: check if the enemy can make any moves, if they can then it is not checkmate
+
+        // Check if the team is in check
+        if (!isInCheck(teamColor)){
+            return false;
+        }
+
+        for (int row = 1; row <=8; row ++){
+            for (int col = 1; col <= 8; col ++){
+                ChessPosition targetPosition = new ChessPosition(row, col);
+                ChessPiece piece = board.getPiece(targetPosition);
+
+
+            }
+        }
+
+        return true;
     }
 
     /**

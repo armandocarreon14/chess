@@ -58,12 +58,6 @@ public class ChessBoard {
     }
     //--------------------------------------------------------------------
 
-    public ChessGame.TeamColor getTeamOfSquare(ChessPosition position) {
-        if (getPiece(position) != null) {
-            return getPiece(position).getTeamColor();
-        }
-        else return null;
-    }
 
 
     /**

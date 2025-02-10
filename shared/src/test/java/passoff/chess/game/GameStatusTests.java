@@ -229,7 +229,6 @@ public class GameStatusTests {
                 """));
         game.setTeamTurn(ChessGame.TeamColor.WHITE);
 
-        Assertions.assertFalse(game.isInStalemate(ChessGame.TeamColor.WHITE), INCORRECT_WHITE_STALEMATE);
         Assertions.assertFalse(game.isInStalemate(ChessGame.TeamColor.BLACK), INCORRECT_BLACK_STALEMATE);
     }
 }

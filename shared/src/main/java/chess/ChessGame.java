@@ -27,15 +27,24 @@ public class ChessGame {
         return Objects.hash(teamTurn, board, gameOver);
     }
 
+    @Override
+    public String toString() {
+        return "ChessGame{" +
+                "teamTurn=" + teamTurn +
+                ", board=" + board +
+                ", gameOver=" + gameOver +
+                '}';
+    }
+
     private TeamColor teamTurn;
-    private ChessBoard board;
+    private ChessBoard board = new ChessBoard();
 
     private boolean gameOver;
 
 
     public ChessGame() {
 
-        board = new ChessBoard();
+        this.board.resetBoard();
         setTeamTurn(TeamColor.WHITE);
     }
 
@@ -165,7 +174,7 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        return isInCheck(teamColor) && isInStalemate(teamColor);
     }
 
     /**
@@ -191,7 +200,6 @@ public class ChessGame {
                         return false;
                     }
                 }
-
             }
         }
         return  true;

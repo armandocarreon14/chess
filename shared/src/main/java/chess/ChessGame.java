@@ -213,6 +213,16 @@ public class ChessGame {
                 ChessPosition targetPosition = new ChessPosition(row, col);
                 ChessPiece piece = board.getPiece(targetPosition);
 
+                if (piece == null || piece.getTeamColor() != teamColor){
+                    continue;
+                }
+
+                //Checking the list of valid moves, if the enemy piece can still make a move then it is not checkmate
+                Collection <ChessMove> moves = validMoves(targetPosition);
+                if (moves != null && !moves.isEmpty()) {
+                    return false;
+                }
+
 
             }
         }

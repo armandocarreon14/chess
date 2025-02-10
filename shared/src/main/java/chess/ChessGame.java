@@ -11,6 +11,7 @@ import java.util.Objects;
  * Note: You can add to this class, but you may not alter
  * signature of the existing methods.
  */
+
 public class ChessGame {
 
     @Override
@@ -40,7 +41,6 @@ public class ChessGame {
     private ChessBoard board = new ChessBoard();
 
     private boolean gameOver;
-
 
     public ChessGame() {
 
@@ -199,7 +199,32 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        return isInCheck(teamColor) && isInStalemate(teamColor);
+        // Check if the team is in check
+        if (!isInCheck(teamColor)) {
+            return false;
+        }
+
+        // Check if there are any valid moves for the team
+        for (int row = 1; row <= 8; row++) {
+            for (int col = 1; col <= 8; col++) {
+                ChessPosition position = new ChessPosition(row, col);
+                ChessPiece piece = board.getPiece(position);
+
+                // Check if the spot is empty or if it's from the opposite team
+                if (piece == null || piece.getTeamColor() != teamColor) {
+                    continue;
+                }
+
+                // If the piece has valid moves, it's not checkmate
+                Collection<ChessMove> moves = validMoves(position);
+                if (moves != null && !moves.isEmpty()) {
+                    return false;
+                }
+            }
+        }
+
+        // If no moves can resolve the check then it is a checkmate
+        return true;
     }
 
     /**
@@ -210,6 +235,11 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
+
+        if (isInCheck(teamColor)) {
+            return false;
+        }
+
         for (int row = 1; row < 9; row ++){
             for(int col = 1; col < 9; col ++){
                 ChessPosition myPosition = new ChessPosition(row, col);

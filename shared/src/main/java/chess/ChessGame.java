@@ -251,8 +251,16 @@ public class ChessGame {
 
                 Collection<ChessMove> moves;
 
-                //If the square
+                //If the square is not empty AND the piece is part of my team
+                if(targetPiece != null && teamColor == targetPiece.getTeamColor()){
+                    moves = validMoves(targetPosition);
+                    //There needs to be no valid moves to validate the stalemate
+                    if(moves != null && !moves.isEmpty()){
+                        return false;
+                    }
+                }
             }
+            return true;
         }
 
     /**

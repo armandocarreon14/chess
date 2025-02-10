@@ -93,9 +93,10 @@ public class ChessGame {
 
         for(ChessMove possibleMove : potentialMoves){
             ChessPiece targetPiece = board.getPiece(possibleMove.getEndPosition());
+            board.addPiece(startPosition, null);
             board.addPiece(possibleMove.getEndPosition(), myPiece);
 
-            if(isInCheck(myPiece.getTeamColor())) {
+            if(!isInCheck(myPiece.getTeamColor())) {
                 validMoves.add(possibleMove);
             }
 

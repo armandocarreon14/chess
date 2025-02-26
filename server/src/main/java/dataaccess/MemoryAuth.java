@@ -1,25 +1,32 @@
 package dataaccess;
 
+import model.AuthData;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class MemoryAuth implements AuthDAO{
 
+    public List<AuthData> memoryAuthList = new ArrayList<>();
+
 
     @Override
-    public String createAuth(String username) throws DataAccessException {
-        return "";
+    public void createAuth(AuthData authData) {
+        memoryAuthList.add(authData);
     }
 
     @Override
-    public String getAuth(String authToken) throws DataAccessException {
-        return "";
+    public AuthData getAuth(int index) {
+        return memoryAuthList.get(index);
     }
 
     @Override
-    public void deleteAuth(String authToken) throws DataAccessException {
-
+    public void deleteAuth(AuthData authData){
+        memoryAuthList.remove(authData);
     }
 
     @Override
-    public void clear() throws DataAccessException {
-
+    public void clear() {
+        memoryAuthList.clear();
     }
 }

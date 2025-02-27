@@ -5,7 +5,7 @@ import model.AuthData;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MemoryAuth implements AuthDAO{
+public class MemoryAuthDAO implements AuthDAO{
 
     public List<AuthData> memoryAuthList = new ArrayList<>();
 

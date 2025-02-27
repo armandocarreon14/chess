@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class MemoryGame implements GameDAO{
+public class MemoryGameDAO implements GameDAO{
 
     public List<GameData> gameList = new ArrayList<>();
 

@@ -57,10 +57,16 @@ public class UserService {
         return new LoginResult(loginRequest.username(), authToken);
     }
 
-    public void logout(LogoutRequest logoutRequest) throws DataAccessException{
-        authDAO.getAuth(logoutRequest.authToken());
+    public void logout(LogoutRequest logoutRequest) throws DataAccessException {
+        AuthData authData = authDAO.getAuth(logoutRequest.authToken());
+
+        if (authData == null) {
+            throw new DataAccessException(401, "Error: unauthorized");
+        }
+
         authDAO.clearAuth(logoutRequest.authToken());
     }
+
 
     public void clear() throws DataAccessException {
         authDAO.clearAllAuth();

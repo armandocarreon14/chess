@@ -79,17 +79,17 @@ public class ServerHandler {
 
     public Object LogoutHandler(Request request, Response response) {
         try {
-            LogoutRequest logoutRequest = new Gson().fromJson(request.body(), LogoutRequest.class);
+            String authToken = request.headers("Authorization");
 
-            // Ensure logoutRequest is not null before accessing its properties
-            if (logoutRequest == null || logoutRequest.authToken() == null) {
+            // Ensure authToken is not null or empty
+            if (authToken == null || authToken.isEmpty()) {
                 response.status(401);
                 String json = new Gson().toJson(Map.of("message", "Error: unauthorized"));
                 response.body(json);
                 return json;
             }
 
-            userService.logout(logoutRequest);
+            userService.logout(new LogoutRequest(authToken));
             response.status(200);
             return "{}"; // Success response
 
@@ -106,6 +106,7 @@ public class ServerHandler {
             return json;
         }
     }
+
 
 
 

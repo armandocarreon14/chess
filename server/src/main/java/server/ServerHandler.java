@@ -8,6 +8,8 @@ import service.UserService;
 import spark.Request;
 import spark.Response;
 
+import java.util.Map;
+
 public class ServerHandler {
 
     private final UserService userService;
@@ -25,28 +27,30 @@ public class ServerHandler {
             return new Gson().toJson(registerResult);
 
         } catch (DataAccessException e) {
-            if (e.getErrorCode() == 403) {
-                response.status(403);
-                return new Gson().toJson(new DataAccessException(403, "Error: already taken"));
-            }
-
-            response.status(400);
-            return new Gson().toJson(new DataAccessException(400, "Error: bad request"));
+            response.status(e.getErrorCode());
+            String json = new Gson().toJson(Map.of("message", e.getMessage()));
+            response.body(json);
+            return json;
 
         } catch (Exception e) {
-
             response.status(500);
-            return new Gson().toJson(new DataAccessException(500, "Error: " + e.getMessage()));
+            String json = new Gson().toJson(Map.of("message", "Error: " + e.getMessage()));
+            response.body(json);
+            return json;
         }
     }
 
+    ///example here
     public Object clearHandler(Request request, Response response) {
         try {
             userService.clear();
-            return new Gson().toJson(new DataAccessException(200, ""));
+            response.status(200);
+            return "{}";
         } catch (DataAccessException e) {
             response.status(500);
-            return new Gson().toJson(new DataAccessException(500, "Error: " + e.getMessage()));
+            String json = new Gson().toJson(Map.of("message", e.getMessage()));         //error example
+            response.body(json);
+            return json;
         }
     }
 
@@ -55,18 +59,55 @@ public class ServerHandler {
         try {
             LoginRequest loginRequest = new Gson().fromJson(request.body(), LoginRequest.class);
             LoginResult loginResult = userService.login(loginRequest);
+
             response.status(200);
             return new Gson().toJson(loginResult);
 
         } catch (DataAccessException e) {
             response.status(401);
-            return new Gson().toJson(new DataAccessException(401, "Error: unauthorized"));
+            String json = new Gson().toJson(Map.of("message", "Error: unauthorized"));
+            response.body(json);
+            return json;
 
         } catch (Exception e) {
             response.status(500);
-            return new Gson().toJson(new DataAccessException(500, "Error: " + e.getMessage()));
+            String json = new Gson().toJson(Map.of("message", "Error: " + e.getMessage()));
+            response.body(json);
+            return json;
         }
     }
+
+    public Object LogoutHandler(Request request, Response response) {
+        try {
+            LogoutRequest logoutRequest = new Gson().fromJson(request.body(), LogoutRequest.class);
+
+            // Ensure logoutRequest is not null before accessing its properties
+            if (logoutRequest == null || logoutRequest.authToken() == null) {
+                response.status(401);
+                String json = new Gson().toJson(Map.of("message", "Error: unauthorized"));
+                response.body(json);
+                return json;
+            }
+
+            userService.logout(logoutRequest);
+            response.status(200);
+            return "{}"; // Success response
+
+        } catch (DataAccessException e) {
+            response.status(401);
+            String json = new Gson().toJson(Map.of("message", "Error: unauthorized"));
+            response.body(json);
+            return json;
+
+        } catch (Exception e) {
+            response.status(500);
+            String json = new Gson().toJson(Map.of("message", "Error: " + e.getMessage()));
+            response.body(json);
+            return json;
+        }
+    }
+
+
 
 
 

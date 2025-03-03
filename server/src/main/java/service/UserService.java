@@ -42,25 +42,20 @@ public class UserService {
         }
     }
 
-    public LoginResult login(LoginRequest loginRequest) throws DataAccessException {
+    public LoginResult login(LoginRequest loginRequest) throws DataAccessException{
         if (loginRequest.username() == null || loginRequest.password() == null) {
-            throw new DataAccessException(500, "Error: Bad request (missing username or password)");
+            throw new DataAccessException(500, "Error: bad request");
         }
 
         UserData userData = userDAO.getUser(loginRequest.username());
-        if (userData == null || !userData.password().equals(loginRequest.password())) {
+        if (userData == null || !userData.password().equals(loginRequest.password())){
             throw new DataAccessException(401, "Error: unauthorized");
         }
 
-        try {
-            String authToken = UUID.randomUUID().toString();
-            authDAO.createAuth(new AuthData(authToken, loginRequest.username()));
-            return new LoginResult(loginRequest.username(), authToken);
-        } catch (DataAccessException e) {
-            throw new DataAccessException(500, "Error: " + e.getMessage());
-        }
+        String authToken = UUID.randomUUID().toString();
+        authDAO.createAuth(new AuthData(authToken, loginRequest.username()));
+        return new LoginResult(loginRequest.username(), authToken);
     }
-
 
     public void logout(LogoutRequest logoutRequest) throws DataAccessException{
         authDAO.getAuth(logoutRequest.authToken());

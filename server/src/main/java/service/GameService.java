@@ -37,7 +37,10 @@ public class GameService {
 
         /// QUESTION 1: game ID doesn't seem to work
         String gameName = createGameRequest.gameName();
-        int gameID = gameDAO.createGame(gameName);
+        int gameID = new Random().nextInt(10000); ;
+        ChessGame game = new ChessGame();
+        GameData gameData = new GameData(gameID, null, null, gameName, game);
+        gameDAO.createGame(gameData);
         return new CreateGameResult(gameID);
     }
 
@@ -95,7 +98,8 @@ public class GameService {
 
         /// Q4: GAMES LIST
         var gamesList = gameDAO.listGames();
-        return new ListGamesResult(gamesList);
+        //return new ListGamesResult(gamesList);
+        return null;
     }
 
 

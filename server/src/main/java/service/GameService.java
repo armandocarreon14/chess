@@ -35,8 +35,9 @@ public class GameService {
             throw new DataAccessException(401, "Error: unauthorized");
         }
 
-        /// QUESTION 1
-        int gameID = new Random().nextInt(10000);  //delete this
+        /// QUESTION 1: game ID doesn't seem to work
+        String gameName = createGameRequest.gameName();
+        int gameID = gameDAO.createGame(gameName);
         return new CreateGameResult(gameID);
     }
 
@@ -55,18 +56,31 @@ public class GameService {
             throw new DataAccessException(400, "Error: bad requestD");
         }
 
-//        ChessGame.TeamColor teamColor = joinGameRequest.playerColor();
-//
-//        if (teamColor == ChessGame.TeamColor.WHITE && gameData.whiteUsername() != null) {
-//            throw new DataAccessException(403, "Error already taken");
-//        }
-//
-//        else if (teamColor == ChessGame.TeamColor.BLACK && gameData.blackUsername() != null) {
-//            throw new DataAccessException(403, "Error already taken");
-//        }
+        /// QUESTION 2: JOIN STEAL TEAM COLOR TEST (403 Already taken) seems like it's not working (taking a color that's taken)
+        ChessGame.TeamColor teamColor = joinGameRequest.playerColor();
 
-        GameData game = gameDAO.getGame(joinGameRequest.gameID());
-//        GameData updatedGameData;
+        if (teamColor == ChessGame.TeamColor.WHITE && gameData.whiteUsername() != null) {
+            throw new DataAccessException(403, "Error already taken");
+        }
+
+        else if (teamColor == ChessGame.TeamColor.BLACK && gameData.blackUsername() != null) {
+            throw new DataAccessException(403, "Error already taken");
+        }
+
+        /// QUESTION 3: JOIN CREATED GAME TEST
+        GameData updatedGameData;
+        ChessGame chessGame = gameData.game();
+        //if black, put all the data including the white username
+        if(teamColor == ChessGame.TeamColor.BLACK){
+            updatedGameData = new GameData(gameData.gameID(), gameData.whiteUsername(), authData.username(), gameData.gameName(), chessGame);
+        }
+
+        else {
+            updatedGameData = new GameData(gameData.gameID(), gameData.blackUsername(), authData.username(), gameData.gameName(), chessGame);
+        }
+
+
+        GameData game = updatedGameData;
         gameDAO.updateGame(game);
     }
 
@@ -78,8 +92,10 @@ public class GameService {
         if (authData == null) {
             throw new DataAccessException(401, "Error: unauthorized");
         }
-        var data = gameDAO.listGames();
-        return new ListGamesResult((List<GameData>) data);
+
+        /// Q4: GAMES LIST
+        var gamesList = gameDAO.listGames();
+        return new ListGamesResult(gamesList);
     }
 
 

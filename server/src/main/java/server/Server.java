@@ -1,9 +1,9 @@
 package server;
 
 import dataaccess.*;
+import service.GameService;
 import service.UserService;
 import spark.*;
-import server.*;
 
 public class Server {
 
@@ -17,13 +17,16 @@ public class Server {
         AuthDAO authDAO = new MemoryAuthDAO();
 
         UserService userService = new UserService(userDAO, authDAO);
-        ServerHandler handler = new ServerHandler(userService);     //game service and auth service here
+        UserHandler handler = new UserHandler(userService);     //game service and auth service here
+        GameService gameService = new GameService(userDAO, authDAO);
+        GameHandler gameHandler = new GameHandler(gameService);
 
         // Register your endpoints and handle exceptions here.
         Spark.post("/user", handler::RegisterHandler);
         Spark.delete("/db", handler::clearHandler);
         Spark.post("/session", handler::LoginHandler);
         Spark.delete("/session", handler::LogoutHandler);
+        Spark.post("/game", gameHandler::createGameHandler);
 
 
         //This line initializes the server and can be removed once you have a functioning endpoint 

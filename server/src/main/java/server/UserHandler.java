@@ -3,18 +3,17 @@ package server;
 import RequestsAndResults.*;
 import com.google.gson.Gson;
 import dataaccess.*;
-import passoff.exception.ResponseParseException;
 import service.UserService;
 import spark.Request;
 import spark.Response;
 
 import java.util.Map;
 
-public class ServerHandler {
+public class UserHandler {
 
     private final UserService userService;
 
-    public ServerHandler(UserService userService) {
+    public UserHandler(UserService userService) {
         this.userService = userService;
     }
 

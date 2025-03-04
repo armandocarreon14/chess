@@ -1,5 +1,6 @@
 package server;
 
+import RequestsAndResults.JoinGameRequest;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import service.GameService;
@@ -39,6 +40,31 @@ public class GameHandler {
         } catch (Exception e) {
             res.status(500);
             return new Gson().toJson(Map.of("message", "Error: " + e.getMessage()));
+        }
+    }
+
+    public Object joinGameHandler(Request req, Response res) throws DataAccessException {
+        // Parse the JSON body to extract the information
+        JsonObject jsonObject = new Gson().fromJson(req.body(), JsonObject.class);
+        jsonObject.addProperty("authToken", req.headers("authorization"));
+        JoinGameRequest joinRequest = new Gson().fromJson(jsonObject, JoinGameRequest.class);
+
+        try {
+            gameService.joinGame(joinRequest);
+
+            res.status(200);
+            return "{}";
+        } catch (DataAccessException e) {
+            int statusCode = e.getErrorCode();
+            res.status(statusCode);
+            JsonObject error = new JsonObject();
+            error.addProperty("message", e.getMessage());
+            return new Gson().toJson(error);
+        } catch (Exception e) {
+            res.status(500);
+            JsonObject error = new JsonObject();
+            error.addProperty("message", "Error: " + e.getMessage());
+            return new Gson().toJson(error);
         }
     }
 

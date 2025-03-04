@@ -45,6 +45,40 @@ public class GameService {
         }
     }
 
+    public void joinGame(JoinGameRequest joinGameRequest) throws DataAccessException{
+        if (joinGameRequest.playerColor() == null || joinGameRequest.authToken() == null || joinGameRequest.gameID() <= 0) {
+            throw new DataAccessException(400, "Error: bad request");
+        }
+
+
+        var authData = authDAO.getAuth(joinGameRequest.authToken());
+        if (authData == null) {
+            throw new DataAccessException(401, "Error: unauthorized");
+        }
+
+        String username = authData.username();
+        GameData gameData = gameDAO.getGame(joinGameRequest.gameID());
+        if (gameData == null) {
+            throw new DataAccessException(400, "Error: no such gameID");
+        }
+
+        GameData updatedGameData;
+
+        if (joinGameRequest.playerColor().equals("WHITE") && gameData.whiteUsername() == null) {
+            updatedGameData = new GameData(gameData.gameID(), username,
+                    gameData.blackUsername(), gameData.gameName(), gameData.game());
+        }
+
+        else if (joinGameRequest.playerColor().equals("BLACK") && gameData.blackUsername() == null) {
+            updatedGameData = new GameData(gameData.gameID(), gameData.whiteUsername(),
+                    username, gameData.gameName(), gameData.game());
+        }
+        else {
+            throw new DataAccessException(403, "Error: color taken");
+        }
+        gameDAO.updateGame(updatedGameData);
+    }
+
 
 
 

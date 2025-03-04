@@ -1,45 +1,51 @@
 package service;
 
 import RequestsAndResults.*;
+import chess.ChessGame;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
+import dataaccess.GameDAO;
 import dataaccess.UserDAO;
+import model.AuthData;
+import model.GameData;
 
 import java.util.Random;
 
 public class GameService {
 
     private final UserDAO userDAO;
+    private final GameDAO gameDAO;
     private final AuthDAO authDAO;
 
-    public GameService(UserDAO userDAO, AuthDAO authDAO) {
+    public GameService(UserDAO userDAO, AuthDAO authDAO, GameDAO gameDAO) {
         this.userDAO = userDAO;
         this.authDAO = authDAO;
+        this.gameDAO = gameDAO;
     }
 
     public CreateGameResult createGame(CreateGameRequest createGameRequest) throws DataAccessException {
-        // Validate authToken
         if (createGameRequest.authToken() == null || createGameRequest.authToken().isEmpty()) {
             throw new DataAccessException(401, "Error: unauthorized");
         }
 
-        // Check if the auth token is valid
         if (authDAO.getAuth(createGameRequest.authToken()) == null) {
             throw new DataAccessException(401, "Error: unauthorized");
         }
 
-        // Ensure gameName is not null or empty
         if (createGameRequest.gameName() == null || createGameRequest.gameName().isEmpty()) {
             throw new DataAccessException(400, "Error: bad request");
         }
 
         try {
-            // Simulating game creation (you can implement a real game creation logic)
-            int gameID = new Random().nextInt(10000);  // Example gameID generation logic
+            int gameID = new Random().nextInt(10000);
 
             return new CreateGameResult(gameID);
         } catch (Exception e) {
             throw new DataAccessException(500, "Error: " + e.getMessage());
         }
     }
+
+
+
+
 }

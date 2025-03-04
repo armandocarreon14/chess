@@ -1,11 +1,9 @@
 package server;
 
-import RequestsAndResults.JoinGameRequest;
+import RequestsAndResults.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import service.GameService;
-import RequestsAndResults.CreateGameRequest;
-import RequestsAndResults.CreateGameResult;
 import dataaccess.DataAccessException;
 
 import spark.Request;
@@ -16,7 +14,6 @@ import java.util.Map;
 public class GameHandler {
 
     private final GameService gameService;
-    private final Gson gson = new Gson(); // JSON Parser
 
     public GameHandler(GameService gameService) {
         this.gameService = gameService;
@@ -44,7 +41,6 @@ public class GameHandler {
     }
 
     public Object joinGameHandler(Request req, Response res) throws DataAccessException {
-        // Parse the JSON body to extract the information
         JsonObject jsonObject = new Gson().fromJson(req.body(), JsonObject.class);
         jsonObject.addProperty("authToken", req.headers("authorization"));
         JoinGameRequest joinRequest = new Gson().fromJson(jsonObject, JoinGameRequest.class);
@@ -65,6 +61,27 @@ public class GameHandler {
             JsonObject error = new JsonObject();
             error.addProperty("message", "Error: " + e.getMessage());
             return new Gson().toJson(error);
+        }
+    }
+
+    public Object listHandler(Request request, Response response) {
+        try {
+            // Extract the auth token from headers
+            String authToken = request.headers("authorization");
+            // Create the request object
+            ListGamesRequest listRequest = new ListGamesRequest(authToken);
+            ListGamesResult listResponse = gameService.listGames(listRequest); // Call gameService
+
+            response.status(200); // Return the list
+            return new Gson().toJson(listResponse);
+
+        } catch (DataAccessException e) {
+            response.status(e.getErrorCode());
+            return new Gson().toJson(Map.of("message", e.getMessage()));
+
+        } catch (Exception e) {
+            response.status(500);
+            return new Gson().toJson(Map.of("message", "Error: " + e.getMessage()));
         }
     }
 

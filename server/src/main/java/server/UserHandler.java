@@ -10,9 +10,9 @@ import java.util.Map;
 
 public class UserHandler {
 
-    private final service.UserService userService;
+    private final service.userService userService;
 
-    public UserHandler(service.UserService userService) {
+    public UserHandler(service.userService userService) {
         this.userService = userService;
     }
 

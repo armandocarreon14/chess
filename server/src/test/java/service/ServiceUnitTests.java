@@ -15,7 +15,7 @@ public class ServiceUnitTests {
     GameDAO memoryGameDAO = new MemoryGameDAO();
     UserDAO memoryUserDAO = new MemoryUserDAO();
     AuthDAO memoryAuthDAO = new MemoryAuthDAO();
-    UserService userService = new UserService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
+    service.userService userService = new userService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
     GameService gameService = new GameService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
 
     @BeforeEach
@@ -58,7 +58,7 @@ public class ServiceUnitTests {
     @Test
     public void logoutValid() throws DataAccessException {
 
-        UserService userService = new UserService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
+        service.userService userService = new userService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
         RegisterRequest registerRequest = new RegisterRequest("username", "password", "email@example.com");
         userService.register(registerRequest);
 
@@ -83,7 +83,7 @@ public class ServiceUnitTests {
 
     @Test
     public void createGameValid() throws DataAccessException {
-        UserService userService = new UserService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
+        service.userService userService = new userService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
         RegisterRequest registerRequest = new RegisterRequest("username", "password", "email");
         userService.register(registerRequest);
 
@@ -107,7 +107,7 @@ public class ServiceUnitTests {
 
     @Test
     public void joinGameValid() throws DataAccessException {
-        UserService userService = new UserService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
+        service.userService userService = new userService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
         RegisterRequest registerRequest = new RegisterRequest("username", "password", "email");
         userService.register(registerRequest);
 
@@ -130,7 +130,7 @@ public class ServiceUnitTests {
 
     @Test
     public void joinGameInvalid() throws DataAccessException {
-        UserService userService = new UserService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
+        service.userService userService = new userService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
         RegisterRequest registerRequest = new RegisterRequest("username", "password", "email");
         userService.register(registerRequest);
 
@@ -153,7 +153,7 @@ public class ServiceUnitTests {
 
     @Test
     public void listGameValid() throws DataAccessException {
-        UserService userService = new UserService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
+        service.userService userService = new userService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
         RegisterRequest registerRequest = new RegisterRequest("username", "password", "email");
         userService.register(registerRequest);
 
@@ -182,7 +182,7 @@ public class ServiceUnitTests {
 
     @Test
     public void clearValid() throws DataAccessException {
-        UserService userService = new UserService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
+        service.userService userService = new userService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
         RegisterRequest registerRequest = new RegisterRequest("username", "password", "email");
         userService.register(registerRequest);
 

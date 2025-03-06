@@ -2,7 +2,7 @@ package server;
 
 import dataaccess.*;
 import service.GameService;
-import service.UserService;
+import service.userService;
 import spark.*;
 
 public class Server {
@@ -16,7 +16,7 @@ public class Server {
         GameDAO gameDAO = new MemoryGameDAO();
         AuthDAO authDAO = new MemoryAuthDAO();
 
-        UserService userService = new UserService(userDAO, authDAO, gameDAO);
+        userService userService = new userService(userDAO, authDAO, gameDAO);
         UserHandler UserHandler = new UserHandler(userService);
         GameService gameService = new GameService(userDAO, authDAO, gameDAO);
         GameHandler gameHandler = new GameHandler(gameService);

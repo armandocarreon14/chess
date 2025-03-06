@@ -3,7 +3,6 @@ package RequestsAndResults;
 
 import model.GameData;
 
-import java.util.List;
-
-public record ListGamesResult(List<GameData> gamesList) {
+import java.util.Collection;
+public record ListGamesResult(Collection<GameData> games) {
 }

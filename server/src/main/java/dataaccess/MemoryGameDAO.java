@@ -4,7 +4,6 @@ import model.GameData;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 
 public class MemoryGameDAO implements GameDAO{
 

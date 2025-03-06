@@ -6,10 +6,7 @@ import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
 import dataaccess.UserDAO;
-import model.AuthData;
 import model.GameData;
-
-import java.util.List;
 
 import java.util.Collection;
 import java.util.Random;
@@ -35,17 +32,16 @@ public class GameService {
             throw new DataAccessException(401, "Error: unauthorized");
         }
 
-        /// QUESTION 1: game ID doesn't seem to work
+        int gameID = new Random().nextInt(10000);
         String gameName = createGameRequest.gameName();
-        int gameID = new Random().nextInt(10000); ;
         ChessGame game = new ChessGame();
         GameData gameData = new GameData(gameID, null, null, gameName, game);
         gameDAO.createGame(gameData);
         return new CreateGameResult(gameID);
     }
 
-    public void joinGame(JoinGameRequest joinGameRequest) throws DataAccessException{
-        if (joinGameRequest.playerColor() == null || joinGameRequest.authToken() == null || joinGameRequest.gameID() <= 0) {
+    public void joinGame(JoinGameRequest joinGameRequest) throws DataAccessException {
+        if (joinGameRequest.playerColor() == null ) {
             throw new DataAccessException(400, "Error: bad request");
         }
 
@@ -59,27 +55,21 @@ public class GameService {
             throw new DataAccessException(400, "Error: bad requestD");
         }
 
-        /// QUESTION 2: JOIN STEAL TEAM COLOR TEST (403 Already taken) seems like it's not working (taking a color that's taken)
         ChessGame.TeamColor teamColor = joinGameRequest.playerColor();
 
         if (teamColor == ChessGame.TeamColor.WHITE && gameData.whiteUsername() != null) {
             throw new DataAccessException(403, "Error already taken");
-        }
-
-        else if (teamColor == ChessGame.TeamColor.BLACK && gameData.blackUsername() != null) {
+        } else if (teamColor == ChessGame.TeamColor.BLACK && gameData.blackUsername() != null) {
             throw new DataAccessException(403, "Error already taken");
         }
 
-        /// QUESTION 3: JOIN CREATED GAME TEST
+
         GameData updatedGameData;
         ChessGame chessGame = gameData.game();
-        //if black, put all the data including the white username
-        if(teamColor == ChessGame.TeamColor.BLACK){
+        if (teamColor == ChessGame.TeamColor.BLACK) {
             updatedGameData = new GameData(gameData.gameID(), gameData.whiteUsername(), authData.username(), gameData.gameName(), chessGame);
-        }
-
-        else {
-            updatedGameData = new GameData(gameData.gameID(), gameData.blackUsername(), authData.username(), gameData.gameName(), chessGame);
+        } else {
+            updatedGameData = new GameData(gameData.gameID(), authData.username(), gameData.blackUsername(), gameData.gameName(), chessGame);
         }
 
 
@@ -96,11 +86,15 @@ public class GameService {
             throw new DataAccessException(401, "Error: unauthorized");
         }
 
-        /// Q4: GAMES LIST
-        var gamesList = gameDAO.listGames();
-        //return new ListGamesResult(gamesList);
-        return null;
+        Collection<GameData> gameList = gameDAO.listGames();
+        return new ListGamesResult(gameList);
     }
 
+    public void clear() throws DataAccessException {
+        authDAO.clearAllAuth();
+        userDAO.clear();
+        gameDAO.clear();
 
+
+    }
 }

@@ -66,13 +66,12 @@ public class GameHandler {
 
     public Object listHandler(Request request, Response response) {
         try {
-            // Extract the auth token from headers
-            String authToken = request.headers("authorization");
-            // Create the request object
-            ListGamesRequest listRequest = new ListGamesRequest(authToken);
-            ListGamesResult listResponse = gameService.listGames(listRequest); // Call gameService
 
-            response.status(200); // Return the list
+            String authToken = request.headers("authorization");
+            ListGamesRequest listRequest = new ListGamesRequest(authToken);
+            ListGamesResult listResponse = gameService.listGames(listRequest);
+
+            response.status(200);
             return new Gson().toJson(listResponse);
 
         } catch (DataAccessException e) {

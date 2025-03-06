@@ -1,8 +1,8 @@
 package server;
 
 import dataaccess.*;
-import service.gameService;
-import service.userService;
+import service.GameService;
+import service.UserService;
 import spark.*;
 
 public class Server {
@@ -16,9 +16,9 @@ public class Server {
         GameDAO gameDAO = new MemoryGameDAO();
         AuthDAO authDAO = new MemoryAuthDAO();
 
-        userService userService = new userService(userDAO, authDAO, gameDAO);
+        UserService userService = new UserService(userDAO, authDAO, gameDAO);
         UserHandler UserHandler = new UserHandler(userService);
-        gameService gameService = new gameService(userDAO, authDAO, gameDAO);
+        GameService gameService = new GameService(userDAO, authDAO, gameDAO);
         GameHandler gameHandler = new GameHandler(gameService);
 
         // Register your endpoints and handle exceptions here.

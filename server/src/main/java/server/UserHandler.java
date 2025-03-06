@@ -10,16 +10,16 @@ import java.util.Map;
 
 public class UserHandler {
 
-    private final service.userService UserService;
+    private final service.UserService userService;
 
-    public UserHandler(service.userService userService) {
-        this.UserService = userService;
+    public UserHandler(service.UserService userService) {
+        this.userService = userService;
     }
 
     public Object registerHandler(Request request, Response response) {
         try {
             RegisterRequest registerRequest = new Gson().fromJson(request.body(), RegisterRequest.class);
-            RegisterResult registerResult = UserService.register(registerRequest);
+            RegisterResult registerResult = userService.register(registerRequest);
 
             response.status(200);
             return new Gson().toJson(registerResult);
@@ -41,7 +41,7 @@ public class UserHandler {
 
     public Object clearHandler(Request request, Response response) {
         try {
-            UserService.clear();
+            userService.clear();
             response.status(200);
             return "{}";
         } catch (DataAccessException e) {
@@ -56,7 +56,7 @@ public class UserHandler {
     public Object loginHandler(Request request, Response response) {
         try {
             LoginRequest loginRequest = new Gson().fromJson(request.body(), LoginRequest.class);
-            LoginResult loginResult = UserService.login(loginRequest);
+            LoginResult loginResult = userService.login(loginRequest);
 
             return new Gson().toJson(loginResult);
 
@@ -85,7 +85,7 @@ public class UserHandler {
                 return json;
             }
 
-            UserService.logout(new LogoutRequest(authToken));
+            userService.logout(new LogoutRequest(authToken));
             return "{}";
 
         } catch (DataAccessException e) {

@@ -10,13 +10,13 @@ import model.UserData;
 
 import java.util.UUID;
 
-public class userService {
+public class UserService {
 
     UserDAO userDAO;
     AuthDAO authDAO;
     GameDAO gameDAO;
 
-    public userService(UserDAO userDAO, AuthDAO authDAO, GameDAO gameDAO){
+    public UserService(UserDAO userDAO, AuthDAO authDAO, GameDAO gameDAO){
         this.userDAO = userDAO;
         this.authDAO = authDAO;
         this.gameDAO = gameDAO;

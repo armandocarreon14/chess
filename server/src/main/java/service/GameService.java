@@ -11,13 +11,13 @@ import model.GameData;
 import java.util.Collection;
 import java.util.Random;
 
-public class gameService {
+public class GameService {
 
     private final UserDAO userDAO;
     private final GameDAO gameDAO;
     private final AuthDAO authDAO;
 
-    public gameService(UserDAO userDAO, AuthDAO authDAO, GameDAO gameDAO) {
+    public GameService(UserDAO userDAO, AuthDAO authDAO, GameDAO gameDAO) {
         this.userDAO = userDAO;
         this.authDAO = authDAO;
         this.gameDAO = gameDAO;

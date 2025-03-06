@@ -15,8 +15,8 @@ public class ServiceUnitTests {
     GameDAO memoryGameDAO = new MemoryGameDAO();
     UserDAO memoryUserDAO = new MemoryUserDAO();
     AuthDAO memoryAuthDAO = new MemoryAuthDAO();
-    service.userService userService = new userService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
-    service.gameService gameService = new gameService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
+    UserService userService = new UserService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
+    GameService gameService = new GameService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
 
     @BeforeEach
     public void clear() throws DataAccessException{
@@ -58,7 +58,7 @@ public class ServiceUnitTests {
     @Test
     public void logoutValid() throws DataAccessException {
 
-        service.userService userService = new userService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
+        UserService userService = new UserService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
         RegisterRequest registerRequest = new RegisterRequest("username", "password", "email@example.com");
         userService.register(registerRequest);
 
@@ -83,7 +83,7 @@ public class ServiceUnitTests {
 
     @Test
     public void createGameValid() throws DataAccessException {
-        service.userService userService = new userService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
+        UserService userService = new UserService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
         RegisterRequest registerRequest = new RegisterRequest("username", "password", "email");
         userService.register(registerRequest);
 
@@ -91,7 +91,7 @@ public class ServiceUnitTests {
         LoginResult loginResult = userService.login(loginRequest);
         String authToken = loginResult.authToken();
 
-        service.gameService gameService = new gameService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
+        GameService gameService = new GameService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
         CreateGameRequest createGameRequest = new CreateGameRequest("gameName", authToken);
         CreateGameResult createGameResult = gameService.createGame(createGameRequest);
 
@@ -100,21 +100,21 @@ public class ServiceUnitTests {
 
     @Test
     public void createGameInvalid() {
-        service.gameService gameService = new gameService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
+        GameService gameService = new GameService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
         CreateGameRequest invalidRequest = new CreateGameRequest(null, null);
         assertThrows(DataAccessException.class, () -> gameService.createGame(invalidRequest));
     }
 
     @Test
     public void joinGameValid() throws DataAccessException {
-        service.userService userService = new userService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
+        UserService userService = new UserService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
         RegisterRequest registerRequest = new RegisterRequest("username", "password", "email");
         userService.register(registerRequest);
 
         LoginRequest loginRequest = new LoginRequest("username", "password");
         LoginResult loginResult = userService.login(loginRequest);
         String authToken = loginResult.authToken();
-        service.gameService gameService = new gameService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
+        GameService gameService = new GameService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
 
         CreateGameRequest createGameRequest = new CreateGameRequest("gameName", authToken);
         CreateGameResult createGameResult = gameService.createGame(createGameRequest);
@@ -130,14 +130,14 @@ public class ServiceUnitTests {
 
     @Test
     public void joinGameInvalid() throws DataAccessException {
-        service.userService userService = new userService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
+        UserService userService = new UserService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
         RegisterRequest registerRequest = new RegisterRequest("username", "password", "email");
         userService.register(registerRequest);
 
         LoginRequest loginRequest = new LoginRequest("username", "password");
         LoginResult loginResult = userService.login(loginRequest);
         String authToken = loginResult.authToken();
-        service.gameService gameService = new gameService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
+        GameService gameService = new GameService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
 
         CreateGameRequest createGameRequest = new CreateGameRequest("gameName", authToken);
         CreateGameResult createGameResult = gameService.createGame(createGameRequest);
@@ -153,7 +153,7 @@ public class ServiceUnitTests {
 
     @Test
     public void listGameValid() throws DataAccessException {
-        service.userService userService = new userService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
+        UserService userService = new UserService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
         RegisterRequest registerRequest = new RegisterRequest("username", "password", "email");
         userService.register(registerRequest);
 
@@ -161,7 +161,7 @@ public class ServiceUnitTests {
         LoginResult loginResult = userService.login(loginRequest);
 
         String authToken = loginResult.authToken();
-        service.gameService gameService = new gameService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
+        GameService gameService = new GameService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
 
         CreateGameRequest createGameRequest = new CreateGameRequest("gameName", authToken);
         gameService.createGame(createGameRequest);
@@ -182,7 +182,7 @@ public class ServiceUnitTests {
 
     @Test
     public void clearValid() throws DataAccessException {
-        service.userService userService = new userService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
+        UserService userService = new UserService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
         RegisterRequest registerRequest = new RegisterRequest("username", "password", "email");
         userService.register(registerRequest);
 
@@ -190,7 +190,7 @@ public class ServiceUnitTests {
         LoginResult loginResult = userService.login(loginRequest);
 
         String authToken = loginResult.authToken();
-        service.gameService gameService = new gameService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
+        GameService gameService = new GameService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
 
         CreateGameRequest createGameRequest = new CreateGameRequest("gameName", authToken);
         gameService.createGame(createGameRequest);

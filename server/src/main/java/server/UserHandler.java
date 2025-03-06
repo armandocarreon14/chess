@@ -8,18 +8,18 @@ import spark.Response;
 
 import java.util.Map;
 
-public class userHandler {
+public class UserHandler {
 
-    private final service.userService userService;
+    private final service.userService UserService;
 
-    public userHandler(service.userService userService) {
-        this.userService = userService;
+    public UserHandler(service.userService userService) {
+        this.UserService = userService;
     }
 
     public Object registerHandler(Request request, Response response) {
         try {
-            registerRequest registerRequest = new Gson().fromJson(request.body(), requestandresults.registerRequest.class);
-            registerResult registerResult = userService.register(registerRequest);
+            RegisterRequest registerRequest = new Gson().fromJson(request.body(), RegisterRequest.class);
+            RegisterResult registerResult = UserService.register(registerRequest);
 
             response.status(200);
             return new Gson().toJson(registerResult);
@@ -41,7 +41,7 @@ public class userHandler {
 
     public Object clearHandler(Request request, Response response) {
         try {
-            userService.clear();
+            UserService.clear();
             response.status(200);
             return "{}";
         } catch (DataAccessException e) {
@@ -55,8 +55,8 @@ public class userHandler {
 
     public Object loginHandler(Request request, Response response) {
         try {
-            loginRequest loginRequest = new Gson().fromJson(request.body(), requestandresults.loginRequest.class);
-            loginResult loginResult = userService.login(loginRequest);
+            LoginRequest loginRequest = new Gson().fromJson(request.body(), LoginRequest.class);
+            LoginResult loginResult = UserService.login(loginRequest);
 
             return new Gson().toJson(loginResult);
 
@@ -85,7 +85,7 @@ public class userHandler {
                 return json;
             }
 
-            userService.logout(new logoutRequest(authToken));
+            UserService.logout(new LogoutRequest(authToken));
             return "{}";
 
         } catch (DataAccessException e) {

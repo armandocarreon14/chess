@@ -22,7 +22,7 @@ public class userService {
         this.gameDAO = gameDAO;
     }
 
-    public registerResult register(registerRequest registerRequest) throws DataAccessException{
+    public RegisterResult register(RegisterRequest registerRequest) throws DataAccessException{
         if (registerRequest.username() == null || registerRequest.password() == null) {
             throw new DataAccessException(400 , "Error: bad request");
         }
@@ -38,14 +38,14 @@ public class userService {
             String authToken = UUID.randomUUID().toString();
             AuthData authData = new AuthData(authToken, registerRequest.username());
             authDAO.createAuth(authData);
-            return new registerResult(registerRequest.username(), authToken);
+            return new RegisterResult(registerRequest.username(), authToken);
         }
         catch (DataAccessException e){
             throw new DataAccessException(500, "Error: " +e.getMessage());
         }
     }
 
-    public loginResult login(loginRequest loginRequest) throws DataAccessException{
+    public LoginResult login(LoginRequest loginRequest) throws DataAccessException{
         if (loginRequest.username() == null) {
             throw new DataAccessException(500, "Error: bad request");
         }
@@ -57,10 +57,10 @@ public class userService {
 
         String authToken = UUID.randomUUID().toString();
         authDAO.createAuth(new AuthData(authToken, loginRequest.username()));
-        return new loginResult(loginRequest.username(), authToken);
+        return new LoginResult(loginRequest.username(), authToken);
     }
 
-    public void logout(logoutRequest logoutRequest) throws DataAccessException {
+    public void logout(LogoutRequest logoutRequest) throws DataAccessException {
         AuthData authData = authDAO.getAuth(logoutRequest.authToken());
 
         if (authData == null) {

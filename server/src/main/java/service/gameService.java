@@ -23,7 +23,7 @@ public class gameService {
         this.gameDAO = gameDAO;
     }
 
-    public createGameResult createGame(createGameRequest createGameRequest) throws DataAccessException {
+    public CreateGameResult createGame(CreateGameRequest createGameRequest) throws DataAccessException {
         if (createGameRequest.authToken() == null) {
             throw new DataAccessException(401, "Error: unauthorized");
         }
@@ -37,10 +37,10 @@ public class gameService {
         ChessGame game = new ChessGame();
         GameData gameData = new GameData(gameID, null, null, gameName, game);
         gameDAO.createGame(gameData);
-        return new createGameResult(gameID);
+        return new CreateGameResult(gameID);
     }
 
-    public void joinGame(joinGameRequest joinGameRequest) throws DataAccessException {
+    public void joinGame(JoinGameRequest joinGameRequest) throws DataAccessException {
         if (joinGameRequest.playerColor() == null ) {
             throw new DataAccessException(400, "Error: bad request");
         }
@@ -77,7 +77,7 @@ public class gameService {
         gameDAO.updateGame(game);
     }
 
-    public listGamesResult listGames(listGamesRequest listGamesRequest) throws DataAccessException {
+    public ListGamesResult listGames(ListGamesRequest listGamesRequest) throws DataAccessException {
         if (listGamesRequest.authToken() == null) {
             throw new DataAccessException(400, "Error: invalid request");
         }
@@ -87,7 +87,7 @@ public class gameService {
         }
 
         Collection<GameData> gameList = gameDAO.listGames();
-        return new listGamesResult(gameList);
+        return new ListGamesResult(gameList);
     }
 
     public void clear() throws DataAccessException {

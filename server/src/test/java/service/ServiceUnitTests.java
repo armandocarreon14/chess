@@ -26,48 +26,48 @@ public class ServiceUnitTests {
 
     @Test
     public void registerValid() throws  DataAccessException {
-        registerRequest registerRequest = new registerRequest("username", "password", "email");
-        registerResult registerResult = userService.register(registerRequest);
+        RegisterRequest registerRequest = new RegisterRequest("username", "password", "email");
+        RegisterResult registerResult = userService.register(registerRequest);
         assertEquals("username", registerResult.username());
     }
 
     @Test
     public void registerInvalid() {
-        registerRequest invalidRequest = new registerRequest(null, null, null);
+        RegisterRequest invalidRequest = new RegisterRequest(null, null, null);
         assertThrows(Exception.class, () -> userService.register(invalidRequest));
     }
 
     @Test
     public void loginValid() throws DataAccessException {
-        registerRequest registerRequest = new registerRequest("username", "password", "email");
+        RegisterRequest registerRequest = new RegisterRequest("username", "password", "email");
         userService.register(registerRequest);
-        loginRequest loginRequest = new loginRequest("username", "password");
+        LoginRequest loginRequest = new LoginRequest("username", "password");
 
         assertNotNull(userService.login(loginRequest).username());
     }
 
     @Test
     public void loginInvalid() throws DataAccessException {
-        registerRequest registerRequest = new registerRequest("username", "password", "email");
+        RegisterRequest registerRequest = new RegisterRequest("username", "password", "email");
         userService.register(registerRequest);
-        loginRequest loginRequest = new loginRequest("username", "wrongpassword");
+        LoginRequest loginRequest = new LoginRequest("username", "wrongpassword");
         assertThrows(Exception.class, () -> userService.login(loginRequest));
     }
 
 
     @Test
-    public void logout_Valid() throws DataAccessException {
+    public void logoutValid() throws DataAccessException {
 
         service.userService userService = new userService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
-        registerRequest registerRequest = new registerRequest("username", "password", "email@example.com");
+        RegisterRequest registerRequest = new RegisterRequest("username", "password", "email@example.com");
         userService.register(registerRequest);
 
-        loginRequest loginRequest = new loginRequest("username", "password");
-        loginResult loginResult = userService.login(loginRequest);
+        LoginRequest loginRequest = new LoginRequest("username", "password");
+        LoginResult loginResult = userService.login(loginRequest);
         String authToken = loginResult.authToken();
         assertNotNull(authToken);
 
-        logoutRequest logoutRequest = new logoutRequest(authToken);
+        LogoutRequest logoutRequest = new LogoutRequest(authToken);
         userService.logout(logoutRequest);
 
         AuthData authData = memoryAuthDAO.getAuth(authToken);
@@ -76,51 +76,51 @@ public class ServiceUnitTests {
 
 
     @Test
-    public void logout_Invalid() {
-        logoutRequest invalidLogoutRequest = new logoutRequest(null);
+    public void logoutInvalid() {
+        LogoutRequest invalidLogoutRequest = new LogoutRequest(null);
         assertThrows(DataAccessException.class, () -> userService.logout(invalidLogoutRequest));
     }
 
     @Test
-    public void createGame_Valid() throws DataAccessException {
+    public void createGameValid() throws DataAccessException {
         service.userService userService = new userService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
-        registerRequest registerRequest = new registerRequest("username", "password", "email");
+        RegisterRequest registerRequest = new RegisterRequest("username", "password", "email");
         userService.register(registerRequest);
 
-        loginRequest loginRequest = new loginRequest("username", "password");
-        loginResult loginResult = userService.login(loginRequest);
+        LoginRequest loginRequest = new LoginRequest("username", "password");
+        LoginResult loginResult = userService.login(loginRequest);
         String authToken = loginResult.authToken();
 
         service.gameService gameService = new gameService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
-        createGameRequest createGameRequest = new createGameRequest("gameName", authToken);
-        createGameResult createGameResult = gameService.createGame(createGameRequest);
+        CreateGameRequest createGameRequest = new CreateGameRequest("gameName", authToken);
+        CreateGameResult createGameResult = gameService.createGame(createGameRequest);
 
         assert(createGameResult.gameID() >= 0);//Make sure there is a valid ID
     }
 
     @Test
-    public void createGame_Invalid() {
+    public void createGameInvalid() {
         service.gameService gameService = new gameService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
-        createGameRequest invalidRequest = new createGameRequest(null, null);
+        CreateGameRequest invalidRequest = new CreateGameRequest(null, null);
         assertThrows(DataAccessException.class, () -> gameService.createGame(invalidRequest));
     }
 
     @Test
-    public void joinGame_Valid() throws DataAccessException {
+    public void joinGameValid() throws DataAccessException {
         service.userService userService = new userService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
-        registerRequest registerRequest = new registerRequest("username", "password", "email");
+        RegisterRequest registerRequest = new RegisterRequest("username", "password", "email");
         userService.register(registerRequest);
 
-        loginRequest loginRequest = new loginRequest("username", "password");
-        loginResult loginResult = userService.login(loginRequest);
+        LoginRequest loginRequest = new LoginRequest("username", "password");
+        LoginResult loginResult = userService.login(loginRequest);
         String authToken = loginResult.authToken();
         service.gameService gameService = new gameService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
 
-        createGameRequest createGameRequest = new createGameRequest("gameName", authToken);
-        createGameResult createGameResult = gameService.createGame(createGameRequest);
+        CreateGameRequest createGameRequest = new CreateGameRequest("gameName", authToken);
+        CreateGameResult createGameResult = gameService.createGame(createGameRequest);
         int gameID = createGameResult.gameID();
 
-        joinGameRequest joinGameRequest = new joinGameRequest(authToken, ChessGame.TeamColor.WHITE, gameID);
+        JoinGameRequest joinGameRequest = new JoinGameRequest(authToken, ChessGame.TeamColor.WHITE, gameID);
         gameService.joinGame(joinGameRequest);
 
         GameData gameData = memoryGameDAO.getGame(gameID);
@@ -129,53 +129,53 @@ public class ServiceUnitTests {
     }
 
     @Test
-    public void joinGame_Invalid() throws DataAccessException {
+    public void joinGameInvalid() throws DataAccessException {
         service.userService userService = new userService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
-        registerRequest registerRequest = new registerRequest("username", "password", "email");
+        RegisterRequest registerRequest = new RegisterRequest("username", "password", "email");
         userService.register(registerRequest);
 
-        loginRequest loginRequest = new loginRequest("username", "password");
-        loginResult loginResult = userService.login(loginRequest);
+        LoginRequest loginRequest = new LoginRequest("username", "password");
+        LoginResult loginResult = userService.login(loginRequest);
         String authToken = loginResult.authToken();
         service.gameService gameService = new gameService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
 
-        createGameRequest createGameRequest = new createGameRequest("gameName", authToken);
-        createGameResult createGameResult = gameService.createGame(createGameRequest);
+        CreateGameRequest createGameRequest = new CreateGameRequest("gameName", authToken);
+        CreateGameResult createGameResult = gameService.createGame(createGameRequest);
         int gameID = createGameResult.gameID();
 
-        joinGameRequest joinGameRequest = new joinGameRequest(authToken, ChessGame.TeamColor.WHITE, gameID);
+        JoinGameRequest joinGameRequest = new JoinGameRequest(authToken, ChessGame.TeamColor.WHITE, gameID);
         gameService.joinGame(joinGameRequest);
 
-        requestandresults.joinGameRequest newJoinRequest =  new joinGameRequest(authToken, ChessGame.TeamColor.WHITE, gameID); //Joining with a taken color
+        JoinGameRequest newJoinRequest =  new JoinGameRequest(authToken, ChessGame.TeamColor.WHITE, gameID); //Joining with a taken color
         assertThrows(DataAccessException.class, () -> gameService.joinGame(newJoinRequest));
 
     }
 
     @Test
-    public void listGame_Valid() throws DataAccessException {
+    public void listGameValid() throws DataAccessException {
         service.userService userService = new userService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
-        registerRequest registerRequest = new registerRequest("username", "password", "email");
+        RegisterRequest registerRequest = new RegisterRequest("username", "password", "email");
         userService.register(registerRequest);
 
-        loginRequest loginRequest = new loginRequest("username", "password");
-        loginResult loginResult = userService.login(loginRequest);
+        LoginRequest loginRequest = new LoginRequest("username", "password");
+        LoginResult loginResult = userService.login(loginRequest);
 
         String authToken = loginResult.authToken();
         service.gameService gameService = new gameService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
 
-        createGameRequest createGameRequest = new createGameRequest("gameName", authToken);
+        CreateGameRequest createGameRequest = new CreateGameRequest("gameName", authToken);
         gameService.createGame(createGameRequest);
 
-        listGamesRequest listGamesRequest = new listGamesRequest(authToken);
-        listGamesResult listGamesResult = gameService.listGames(listGamesRequest);
+        ListGamesRequest listGamesRequest = new ListGamesRequest(authToken);
+        ListGamesResult listGamesResult = gameService.listGames(listGamesRequest);
 
         assertNotNull(listGamesResult.games());
     }
 
     @Test
-    public void listGame_Invalid() {
+    public void listGameInvalid() {
 
-        listGamesRequest listGamesRequest = new listGamesRequest(null);
+        ListGamesRequest listGamesRequest = new ListGamesRequest(null);
 
         assertThrows(DataAccessException.class, () -> gameService.listGames(listGamesRequest));
     }
@@ -183,16 +183,16 @@ public class ServiceUnitTests {
     @Test
     public void clearValid() throws DataAccessException {
         service.userService userService = new userService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
-        registerRequest registerRequest = new registerRequest("username", "password", "email");
+        RegisterRequest registerRequest = new RegisterRequest("username", "password", "email");
         userService.register(registerRequest);
 
-        loginRequest loginRequest = new loginRequest("username", "password");
-        loginResult loginResult = userService.login(loginRequest);
+        LoginRequest loginRequest = new LoginRequest("username", "password");
+        LoginResult loginResult = userService.login(loginRequest);
 
         String authToken = loginResult.authToken();
         service.gameService gameService = new gameService(memoryUserDAO, memoryAuthDAO, memoryGameDAO);
 
-        createGameRequest createGameRequest = new createGameRequest("gameName", authToken);
+        CreateGameRequest createGameRequest = new CreateGameRequest("gameName", authToken);
         gameService.createGame(createGameRequest);
 
         userService.clear();

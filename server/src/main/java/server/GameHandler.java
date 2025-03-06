@@ -10,11 +10,11 @@ import spark.Response;
 
 import java.util.Map;
 
-public class gameHandler {
+public class GameHandler {
 
     private final service.gameService gameService;
 
-    public gameHandler(service.gameService gameService) {
+    public GameHandler(service.gameService gameService) {
         this.gameService = gameService;
     }
 
@@ -23,8 +23,8 @@ public class gameHandler {
             JsonObject jsonObject = new Gson().fromJson(request.body(), JsonObject.class);
             jsonObject.addProperty("authToken", request.headers("authorization"));
 
-            createGameRequest createRequest = new Gson().fromJson(jsonObject, createGameRequest.class);
-            createGameResult createResponse = gameService.createGame(createRequest);
+            CreateGameRequest createRequest = new Gson().fromJson(jsonObject, CreateGameRequest.class);
+            CreateGameResult createResponse = gameService.createGame(createRequest);
 
             return new Gson().toJson(createResponse);
 
@@ -38,7 +38,7 @@ public class gameHandler {
     public Object joinGameHandler(Request req, Response res) throws DataAccessException {
         JsonObject jsonObject = new Gson().fromJson(req.body(), JsonObject.class);
         jsonObject.addProperty("authToken", req.headers("authorization"));
-        joinGameRequest joinRequest = new Gson().fromJson(jsonObject, joinGameRequest.class);
+        JoinGameRequest joinRequest = new Gson().fromJson(jsonObject, JoinGameRequest.class);
 
         try {
             gameService.joinGame(joinRequest);
@@ -57,7 +57,7 @@ public class gameHandler {
         try {
 
             String authToken = request.headers("authorization");
-            listGamesResult listResponse = gameService.listGames(new listGamesRequest(authToken));
+            ListGamesResult listResponse = gameService.listGames(new ListGamesRequest(authToken));
 
             return new Gson().toJson(listResponse);
 

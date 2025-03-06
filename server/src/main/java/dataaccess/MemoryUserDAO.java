@@ -18,6 +18,7 @@ public class MemoryUserDAO implements UserDAO {
         return userDataList.get(username);
     }
 
+
     @Override
     public void clear() throws DataAccessException {
         userDataList.clear();

@@ -39,7 +39,7 @@ public class UserHandler {
         }
     }
 
-    ///example here
+
     public Object clearHandler(Request request, Response response) {
         try {
             userService.clear();
@@ -47,7 +47,7 @@ public class UserHandler {
             return "{}";
         } catch (DataAccessException e) {
             response.status(500);
-            String json = new Gson().toJson(Map.of("message", e.getMessage()));         //error example
+            String json = new Gson().toJson(Map.of("message", e.getMessage()));
             response.body(json);
             return json;
         }
@@ -59,12 +59,11 @@ public class UserHandler {
             LoginRequest loginRequest = new Gson().fromJson(request.body(), LoginRequest.class);
             LoginResult loginResult = userService.login(loginRequest);
 
-            response.status(200);
             return new Gson().toJson(loginResult);
 
         } catch (DataAccessException e) {
             response.status(401);
-            String json = new Gson().toJson(Map.of("message", "Error: unauthorized"));
+            String json = new Gson().toJson(Map.of("message", "Error: " +e.getMessage()));
             response.body(json);
             return json;
 
@@ -80,7 +79,6 @@ public class UserHandler {
         try {
             String authToken = request.headers("Authorization");
 
-            // Ensure authToken is not null or empty
             if (authToken == null || authToken.isEmpty()) {
                 response.status(401);
                 String json = new Gson().toJson(Map.of("message", "Error: unauthorized"));
@@ -89,8 +87,7 @@ public class UserHandler {
             }
 
             userService.logout(new LogoutRequest(authToken));
-            response.status(200);
-            return "{}"; // Success response
+            return "{}";
 
         } catch (DataAccessException e) {
             response.status(401);

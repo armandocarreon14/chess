@@ -19,24 +19,20 @@ public class GameHandler {
         this.gameService = gameService;
     }
 
-    public Object CreateGameHandler(Request req, Response res) {
+    public Object CreateGameHandler(Request request, Response response) {
         try {
-            JsonObject jsonObject = new Gson().fromJson(req.body(), JsonObject.class);
-            jsonObject.addProperty("authToken", req.headers("authorization"));
+            JsonObject jsonObject = new Gson().fromJson(request.body(), JsonObject.class);
+            jsonObject.addProperty("authToken", request.headers("authorization"));
 
             CreateGameRequest createRequest = new Gson().fromJson(jsonObject, CreateGameRequest.class);
             CreateGameResult createResponse = gameService.createGame(createRequest);
 
-            res.status(200);
             return new Gson().toJson(createResponse);
 
         } catch (DataAccessException e) {
-            res.status(e.getErrorCode());
+            response.status(e.getErrorCode());
             return new Gson().toJson(Map.of("message", e.getMessage()));
 
-        } catch (Exception e) {
-            res.status(500);
-            return new Gson().toJson(Map.of("message", "Error: " + e.getMessage()));
         }
     }
 
@@ -47,19 +43,13 @@ public class GameHandler {
 
         try {
             gameService.joinGame(joinRequest);
-
-            res.status(200);
             return "{}";
+
         } catch (DataAccessException e) {
             int statusCode = e.getErrorCode();
             res.status(statusCode);
             JsonObject error = new JsonObject();
             error.addProperty("message", e.getMessage());
-            return new Gson().toJson(error);
-        } catch (Exception e) {
-            res.status(500);
-            JsonObject error = new JsonObject();
-            error.addProperty("message", "Error: " + e.getMessage());
             return new Gson().toJson(error);
         }
     }
@@ -68,19 +58,14 @@ public class GameHandler {
         try {
 
             String authToken = request.headers("authorization");
-            ListGamesRequest listRequest = new ListGamesRequest(authToken);
-            ListGamesResult listResponse = gameService.listGames(listRequest);
+            ListGamesResult listResponse = gameService.listGames(new ListGamesRequest(authToken));
 
-            response.status(200);
             return new Gson().toJson(listResponse);
 
         } catch (DataAccessException e) {
             response.status(e.getErrorCode());
             return new Gson().toJson(Map.of("message", e.getMessage()));
 
-        } catch (Exception e) {
-            response.status(500);
-            return new Gson().toJson(Map.of("message", "Error: " + e.getMessage()));
         }
     }
 

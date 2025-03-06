@@ -2,17 +2,8 @@ package chess;
 
 import java.util.Objects;
 
-/**
- * Represents moving a chess piece on a chessboard
- * <p>
- * Note: You can add to this class, but you may not alter
- * signature of the existing methods.
- */
-
-
 public class ChessMove {
 
-    //--------------------------------------------------------------------
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
@@ -26,7 +17,6 @@ public class ChessMove {
     public int hashCode() {
         return Objects.hash(startPosition, endPosition, promotionPiece);
     }
-    //--------------------------------------------------------------------
 
 
     @Override
@@ -38,18 +28,13 @@ public class ChessMove {
                 '}';
     }
 
-    //--------------------------------------------------------------------
-
-    //1) The chess piece has these two characteristics, this goes inside the class
     private final ChessPosition startPosition;
     private final ChessPosition endPosition;
     private final ChessPiece.PieceType promotionPiece;
 
-    //this is the constructor, it has public and the name of the MAIN class (methods have a return)
     public ChessMove(ChessPosition startPosition, ChessPosition endPosition,
                      ChessPiece.PieceType promotionPiece) {
 
-        //2)   We add them to the constructor
         this.startPosition = startPosition;
         this.endPosition = endPosition;
         this.promotionPiece = promotionPiece;

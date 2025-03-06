@@ -1,9 +1,8 @@
 package server;
 
-import RequestsAndResults.*;
+import requestandresults.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import service.GameService;
 import dataaccess.DataAccessException;
 
 import spark.Request;
@@ -11,21 +10,21 @@ import spark.Response;
 
 import java.util.Map;
 
-public class GameHandler {
+public class gameHandler {
 
-    private final GameService gameService;
+    private final service.gameService gameService;
 
-    public GameHandler(GameService gameService) {
+    public gameHandler(service.gameService gameService) {
         this.gameService = gameService;
     }
 
-    public Object CreateGameHandler(Request request, Response response) {
+    public Object createGameHandler(Request request, Response response) {
         try {
             JsonObject jsonObject = new Gson().fromJson(request.body(), JsonObject.class);
             jsonObject.addProperty("authToken", request.headers("authorization"));
 
-            CreateGameRequest createRequest = new Gson().fromJson(jsonObject, CreateGameRequest.class);
-            CreateGameResult createResponse = gameService.createGame(createRequest);
+            createGameRequest createRequest = new Gson().fromJson(jsonObject, createGameRequest.class);
+            createGameResult createResponse = gameService.createGame(createRequest);
 
             return new Gson().toJson(createResponse);
 
@@ -39,7 +38,7 @@ public class GameHandler {
     public Object joinGameHandler(Request req, Response res) throws DataAccessException {
         JsonObject jsonObject = new Gson().fromJson(req.body(), JsonObject.class);
         jsonObject.addProperty("authToken", req.headers("authorization"));
-        JoinGameRequest joinRequest = new Gson().fromJson(jsonObject, JoinGameRequest.class);
+        joinGameRequest joinRequest = new Gson().fromJson(jsonObject, joinGameRequest.class);
 
         try {
             gameService.joinGame(joinRequest);
@@ -58,7 +57,7 @@ public class GameHandler {
         try {
 
             String authToken = request.headers("authorization");
-            ListGamesResult listResponse = gameService.listGames(new ListGamesRequest(authToken));
+            listGamesResult listResponse = gameService.listGames(new listGamesRequest(authToken));
 
             return new Gson().toJson(listResponse);
 

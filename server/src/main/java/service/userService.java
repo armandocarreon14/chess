@@ -1,6 +1,6 @@
 package service;
 
-import RequestsAndResults.*;
+import requestandresults.*;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
@@ -10,19 +10,19 @@ import model.UserData;
 
 import java.util.UUID;
 
-public class UserService {
+public class userService {
 
     UserDAO userDAO;
     AuthDAO authDAO;
     GameDAO gameDAO;
 
-    public UserService(UserDAO userDAO, AuthDAO authDAO, GameDAO gameDAO){
+    public userService(UserDAO userDAO, AuthDAO authDAO, GameDAO gameDAO){
         this.userDAO = userDAO;
         this.authDAO = authDAO;
         this.gameDAO = gameDAO;
     }
 
-    public RegisterResult register(RegisterRequest registerRequest) throws DataAccessException{
+    public registerResult register(registerRequest registerRequest) throws DataAccessException{
         if (registerRequest.username() == null || registerRequest.password() == null) {
             throw new DataAccessException(400 , "Error: bad request");
         }
@@ -38,14 +38,14 @@ public class UserService {
             String authToken = UUID.randomUUID().toString();
             AuthData authData = new AuthData(authToken, registerRequest.username());
             authDAO.createAuth(authData);
-            return new RegisterResult(registerRequest.username(), authToken);
+            return new registerResult(registerRequest.username(), authToken);
         }
         catch (DataAccessException e){
             throw new DataAccessException(500, "Error: " +e.getMessage());
         }
     }
 
-    public LoginResult login(LoginRequest loginRequest) throws DataAccessException{
+    public loginResult login(loginRequest loginRequest) throws DataAccessException{
         if (loginRequest.username() == null) {
             throw new DataAccessException(500, "Error: bad request");
         }
@@ -57,10 +57,10 @@ public class UserService {
 
         String authToken = UUID.randomUUID().toString();
         authDAO.createAuth(new AuthData(authToken, loginRequest.username()));
-        return new LoginResult(loginRequest.username(), authToken);
+        return new loginResult(loginRequest.username(), authToken);
     }
 
-    public void logout(LogoutRequest logoutRequest) throws DataAccessException {
+    public void logout(logoutRequest logoutRequest) throws DataAccessException {
         AuthData authData = authDAO.getAuth(logoutRequest.authToken());
 
         if (authData == null) {

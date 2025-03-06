@@ -1,26 +1,25 @@
 package server;
 
-import RequestsAndResults.*;
+import requestandresults.*;
 import com.google.gson.Gson;
 import dataaccess.*;
-import service.UserService;
 import spark.Request;
 import spark.Response;
 
 import java.util.Map;
 
-public class UserHandler {
+public class userHandler {
 
-    private final UserService userService;
+    private final service.userService userService;
 
-    public UserHandler(UserService userService) {
+    public userHandler(service.userService userService) {
         this.userService = userService;
     }
 
-    public Object RegisterHandler(Request request, Response response) {
+    public Object registerHandler(Request request, Response response) {
         try {
-            RegisterRequest registerRequest = new Gson().fromJson(request.body(), RegisterRequest.class);
-            RegisterResult registerResult = userService.register(registerRequest);
+            registerRequest registerRequest = new Gson().fromJson(request.body(), requestandresults.registerRequest.class);
+            registerResult registerResult = userService.register(registerRequest);
 
             response.status(200);
             return new Gson().toJson(registerResult);
@@ -54,10 +53,10 @@ public class UserHandler {
     }
 
 
-    public Object LoginHandler(Request request, Response response) {
+    public Object loginHandler(Request request, Response response) {
         try {
-            LoginRequest loginRequest = new Gson().fromJson(request.body(), LoginRequest.class);
-            LoginResult loginResult = userService.login(loginRequest);
+            loginRequest loginRequest = new Gson().fromJson(request.body(), requestandresults.loginRequest.class);
+            loginResult loginResult = userService.login(loginRequest);
 
             return new Gson().toJson(loginResult);
 
@@ -75,7 +74,7 @@ public class UserHandler {
         }
     }
 
-    public Object LogoutHandler(Request request, Response response) {
+    public Object logoutHandler(Request request, Response response) {
         try {
             String authToken = request.headers("Authorization");
 
@@ -86,7 +85,7 @@ public class UserHandler {
                 return json;
             }
 
-            userService.logout(new LogoutRequest(authToken));
+            userService.logout(new logoutRequest(authToken));
             return "{}";
 
         } catch (DataAccessException e) {

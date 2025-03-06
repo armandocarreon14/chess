@@ -1,6 +1,6 @@
 package service;
 
-import RequestsAndResults.*;
+import requestandresults.*;
 import chess.ChessGame;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
@@ -11,19 +11,19 @@ import model.GameData;
 import java.util.Collection;
 import java.util.Random;
 
-public class GameService {
+public class gameService {
 
     private final UserDAO userDAO;
     private final GameDAO gameDAO;
     private final AuthDAO authDAO;
 
-    public GameService(UserDAO userDAO, AuthDAO authDAO, GameDAO gameDAO) {
+    public gameService(UserDAO userDAO, AuthDAO authDAO, GameDAO gameDAO) {
         this.userDAO = userDAO;
         this.authDAO = authDAO;
         this.gameDAO = gameDAO;
     }
 
-    public CreateGameResult createGame(CreateGameRequest createGameRequest) throws DataAccessException {
+    public createGameResult createGame(createGameRequest createGameRequest) throws DataAccessException {
         if (createGameRequest.authToken() == null) {
             throw new DataAccessException(401, "Error: unauthorized");
         }
@@ -37,10 +37,10 @@ public class GameService {
         ChessGame game = new ChessGame();
         GameData gameData = new GameData(gameID, null, null, gameName, game);
         gameDAO.createGame(gameData);
-        return new CreateGameResult(gameID);
+        return new createGameResult(gameID);
     }
 
-    public void joinGame(JoinGameRequest joinGameRequest) throws DataAccessException {
+    public void joinGame(joinGameRequest joinGameRequest) throws DataAccessException {
         if (joinGameRequest.playerColor() == null ) {
             throw new DataAccessException(400, "Error: bad request");
         }
@@ -77,7 +77,7 @@ public class GameService {
         gameDAO.updateGame(game);
     }
 
-    public ListGamesResult listGames(ListGamesRequest listGamesRequest) throws DataAccessException {
+    public listGamesResult listGames(listGamesRequest listGamesRequest) throws DataAccessException {
         if (listGamesRequest.authToken() == null) {
             throw new DataAccessException(400, "Error: invalid request");
         }
@@ -87,7 +87,7 @@ public class GameService {
         }
 
         Collection<GameData> gameList = gameDAO.listGames();
-        return new ListGamesResult(gameList);
+        return new listGamesResult(gameList);
     }
 
     public void clear() throws DataAccessException {

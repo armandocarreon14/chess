@@ -1,7 +1,9 @@
 package dataaccess;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import model.AuthData;
 import model.GameData;
 
 import java.sql.SQLException;
@@ -28,13 +30,13 @@ public class SQLGame  implements  GameDAO{
     private final String[] createStatements = {
                     """
         CREATE TABLE IF NOT EXISTS games (
-        `id` int NOT NULL,
+        `ID` int NOT NULL,
         `whiteUsername` varchar(256),
         `blackUsername` varchar(256),
         `name` varchar(256) NOT NULL,
         `game` text NOT NULL,
-        PRIMARY KEY (`id`),
-        INDEX(id)
+        PRIMARY KEY (`ID`),
+        INDEX(ID)
         )
         """
     };
@@ -67,7 +69,7 @@ public class SQLGame  implements  GameDAO{
 
     @Override
     public void createGame(GameData gameData) throws DataAccessException {
-        var statement = "INSERT INTO games (id, whiteUsername, blackUsername, name, game) VALUES (?, ?, ?, ?, ?)";
+        var statement = "INSERT INTO games (ID, whiteUsername, blackUsername, name, game) VALUES (?, ?, ?, ?, ?)";
         Gson gson = new GsonBuilder().enableComplexMapKeySerialization().create();
         var json = gson.toJson(gameData.game());
         try {
@@ -80,6 +82,26 @@ public class SQLGame  implements  GameDAO{
 
     @Override
     public GameData getGame(int gameID) throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection()){
+            var statement = "SELECT * FROM auths WHERE authToken=?";
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.setInt(1, gameID);
+                var rs = ps.executeQuery();
+                if (rs.next()) {
+                    int id = rs.getInt("ID");
+                    String whiteUser = rs.getString("whiteUsername");
+                    String blackUser = rs.getString("blackUsername");
+                    String name  = rs.getString("name");
+                    var json = rs.getString("game");
+
+                    ChessGame chessGame = new Gson().fromJson(json, ChessGame.class);
+                    return new GameData(id, whiteUser, blackUser, name, chessGame);
+                }
+            }
+        }
+        catch (Exception e) {
+            throw new DataAccessException(500, String.format("Unable to read data: %s", e.getMessage()));
+        }
         return null;
     }
 

@@ -36,7 +36,6 @@ public class Server {
     }
 
 
-
     public void stop() {
         Spark.stop();
         Spark.awaitStop();

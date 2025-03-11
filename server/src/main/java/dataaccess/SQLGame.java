@@ -3,7 +3,6 @@ package dataaccess;
 import chess.ChessGame;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import model.AuthData;
 import model.GameData;
 
 import java.sql.SQLException;
@@ -112,6 +111,13 @@ public class SQLGame  implements  GameDAO{
 
     @Override
     public void clear() throws DataAccessException {
-
+        try (var conn = DatabaseManager.getConnection()){
+            var statement = "TRUNCATE Game";
+            try (var preparedStatement = conn.prepareStatement(statement)){
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

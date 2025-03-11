@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Random;
 
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 
@@ -103,9 +104,15 @@ public class SQLGame  implements  GameDAO{
         var statement = "INSERT INTO games (ID, whiteUsername, blackUsername, name, game) VALUES (?, ?, ?, ?, ?)";
         Gson gson = new GsonBuilder().enableComplexMapKeySerialization().create();
         var json = gson.toJson(gameData.game());
-        try {
-            /// null instead of gameData.game?
-            executeUpdate(statement, gameData.game(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), json);
+        Random random = new Random();
+        int gameID = random.nextInt(10000);
+        var conn = DatabaseManager.getConnection();
+        try(var preparedStatement = conn.prepareStatement(statement)) {
+            preparedStatement.setInt(1, gameID);
+            preparedStatement.setString(2, null);
+            preparedStatement.setString(3, null);
+            preparedStatement.setString(4, gameData.gameName());
+            preparedStatement.setString(5, json);
         }
         catch (Throwable e) {
             throw new DataAccessException(500, String.format("unable to update database: %s, %s", statement, e.getMessage()));

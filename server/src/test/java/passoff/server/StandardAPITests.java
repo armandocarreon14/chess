@@ -78,6 +78,7 @@ public class StandardAPITests {
         Assertions.assertNotNull(loginResult.getAuthToken(), "Response did not return authentication String");
     }
 
+
     @Test
     @Order(3)
     @DisplayName("Login Invalid User")

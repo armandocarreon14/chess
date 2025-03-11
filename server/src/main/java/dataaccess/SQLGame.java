@@ -13,6 +13,14 @@ import static java.sql.Statement.RETURN_GENERATED_KEYS;
 
 public class SQLGame  implements  GameDAO{
 
+    public SQLGame() {
+        try {
+            configureDatabase();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private void configureDatabase() throws DataAccessException {
         DatabaseManager.createDatabase();
         try (var conn = DatabaseManager.getConnection()) {

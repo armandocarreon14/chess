@@ -1,7 +1,6 @@
 package dataaccess;
 
 import model.AuthData;
-import passoff.exception.ResponseParseException;
 
 import java.sql.SQLException;
 

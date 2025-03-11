@@ -6,6 +6,7 @@ import com.google.gson.GsonBuilder;
 import model.GameData;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -35,17 +36,17 @@ public class SQLGame  implements  GameDAO{
     }
 
     private final String[] createStatements = {
-                    """
-        CREATE TABLE IF NOT EXISTS games (
-        `ID` int NOT NULL,
+            """
+    CREATE TABLE IF NOT EXISTS games (
+        `ID` int NOT NULL AUTO_INCREMENT,
         `whiteUsername` varchar(256),
         `blackUsername` varchar(256),
         `name` varchar(256) NOT NULL,
         `game` text NOT NULL,
         PRIMARY KEY (`ID`),
         INDEX(ID)
-        )
-        """
+    )
+    """
     };
 
     private int executeUpdate(String statement, Object... params) throws DataAccessException {
@@ -71,8 +72,31 @@ public class SQLGame  implements  GameDAO{
 
     @Override
     public Collection<GameData> listGames() throws DataAccessException {
-        return List.of();
+        String statement = "SELECT * FROM games";
+        List<GameData> games = new ArrayList<>();
+
+        try (var conn = DatabaseManager.getConnection();
+             var ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS);
+             var rs = ps.getGeneratedKeys()) {//result set
+
+            while (rs.next()) {
+                int id = rs.getInt("ID");
+                String whiteUser = rs.getString("whiteUsername");
+                String blackUser = rs.getString("blackUsername");
+                String name = rs.getString("name");
+                String json = rs.getString("game");
+
+                ChessGame chessGame = new Gson().fromJson(json, ChessGame.class);
+                games.add(new GameData(id, whiteUser, blackUser, name, chessGame));
+            }
+
+        } catch (SQLException e) {
+            throw new DataAccessException(500, "Database error while retrieving games: " + e.getMessage());
+        }
+
+        return games;
     }
+
 
     @Override
     public void createGame(GameData gameData) throws DataAccessException {
@@ -80,6 +104,7 @@ public class SQLGame  implements  GameDAO{
         Gson gson = new GsonBuilder().enableComplexMapKeySerialization().create();
         var json = gson.toJson(gameData.game());
         try {
+            /// null instead of gameData.game?
             executeUpdate(statement, gameData.game(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), json);
         }
         catch (Throwable e) {
@@ -90,7 +115,7 @@ public class SQLGame  implements  GameDAO{
     @Override
     public GameData getGame(int gameID) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()){
-            var statement = "SELECT * FROM auths WHERE authToken=?";
+            var statement = "SELECT * FROM games WHERE ID=?";
             try (var ps = conn.prepareStatement(statement)) {
                 ps.setInt(1, gameID);
                 var rs = ps.executeQuery();
@@ -120,7 +145,7 @@ public class SQLGame  implements  GameDAO{
     @Override
     public void clear() throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()){
-            var statement = "TRUNCATE Game";
+            var statement = "TRUNCATE games";
             try (var preparedStatement = conn.prepareStatement(statement)){
                 preparedStatement.executeUpdate();
             }

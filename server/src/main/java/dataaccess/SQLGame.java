@@ -104,13 +104,12 @@ public class SQLGame  implements  GameDAO{
         var statement = "INSERT INTO games (ID, whiteUsername, blackUsername, name, game) VALUES (?, ?, ?, ?, ?)";
         Gson gson = new GsonBuilder().enableComplexMapKeySerialization().create();
         var json = gson.toJson(gameData.game());
-        Random random = new Random();
-        int gameID = random.nextInt(10000);
+        int gameID = new Random().nextInt(10000);
         var conn = DatabaseManager.getConnection();
         try(var preparedStatement = conn.prepareStatement(statement)) {
             preparedStatement.setInt(1, gameID);
-            preparedStatement.setString(2, null);
-            preparedStatement.setString(3, null);
+            preparedStatement.setString(2, gameData.whiteUsername());
+            preparedStatement.setString(3, gameData.blackUsername());
             preparedStatement.setString(4, gameData.gameName());
             preparedStatement.setString(5, json);
         }

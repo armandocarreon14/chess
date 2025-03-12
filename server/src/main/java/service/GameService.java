@@ -52,7 +52,7 @@ public class GameService {
 
         GameData gameData = gameDAO.getGame(joinGameRequest.gameID());
         if (gameData == null) {
-            throw new DataAccessException(400, "Error: bad requestD");
+            throw new DataAccessException(400, "Error: bad request");
         }
 
         ChessGame.TeamColor teamColor = joinGameRequest.playerColor();

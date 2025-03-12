@@ -51,26 +51,6 @@ public class SQLGame  implements  GameDAO{
     """
     };
 
-    private int executeUpdate(String statement, Object... params) throws DataAccessException {
-        try (var conn = DatabaseManager.getConnection()) {
-            try (var ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
-                for (var i = 0; i < params.length; i++) {
-                    var param = params[i];
-                    if (param instanceof String p) ps.setString(i + 1, p);
-                }
-                ps.executeUpdate();
-
-                var rs = ps.getGeneratedKeys();
-                if (rs.next()) {
-                    return rs.getInt(1);
-                }
-
-                return 0;
-            }
-        } catch (SQLException e) {
-            throw new DataAccessException(500, String.format("unable to update database: %s, %s", statement, e.getMessage()));
-        }
-    }
 
     @Override
     public Collection<GameData> listGames() throws DataAccessException {
@@ -79,7 +59,7 @@ public class SQLGame  implements  GameDAO{
 
         try (var conn = DatabaseManager.getConnection();
              var ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS);
-             var rs = ps.getGeneratedKeys()) {//result set
+             var rs = ps.executeQuery()) {//result set
 
             while (rs.next()) {
                 int id = rs.getInt("ID");
@@ -99,23 +79,23 @@ public class SQLGame  implements  GameDAO{
         return games;
     }
 
-
     @Override
     public void createGame(GameData gameData) throws DataAccessException {
         var statement = "INSERT INTO games (ID, whiteUsername, blackUsername, name, game) VALUES (?, ?, ?, ?, ?)";
         Gson gson = new GsonBuilder().enableComplexMapKeySerialization().create();
         var json = gson.toJson(gameData.game());
-        int gameID = new Random().nextInt(10000);
+
         var conn = DatabaseManager.getConnection();
         try(var preparedStatement = conn.prepareStatement(statement, Statement.RETURN_GENERATED_KEYS)) {
-            preparedStatement.setInt(1, gameID);
+            preparedStatement.setInt(1, gameData.gameID());
             preparedStatement.setString(2, gameData.whiteUsername());
             preparedStatement.setString(3, gameData.blackUsername());
             preparedStatement.setString(4, gameData.gameName());
             preparedStatement.setString(5, json);
 
             //preparedStatement.executeUpdate(statement, gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), json);
-            //preparedStatement.executeUpdate();
+            preparedStatement.executeUpdate();
+
         }
 
         catch (Throwable e) {

@@ -6,6 +6,7 @@ import com.google.gson.GsonBuilder;
 import model.GameData;
 
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -92,7 +93,7 @@ public class SQLGame  implements  GameDAO{
             }
 
         } catch (SQLException e) {
-            throw new DataAccessException(500, "Database error while retrieving games: " + e.getMessage());
+            throw new DataAccessException(500, e.getMessage());
         }
 
         return games;
@@ -106,7 +107,7 @@ public class SQLGame  implements  GameDAO{
         var json = gson.toJson(gameData.game());
         int gameID = new Random().nextInt(10000);
         var conn = DatabaseManager.getConnection();
-        try(var preparedStatement = conn.prepareStatement(statement)) {
+        try(var preparedStatement = conn.prepareStatement(statement, Statement.RETURN_GENERATED_KEYS)) {
             preparedStatement.setInt(1, gameID);
             preparedStatement.setString(2, gameData.whiteUsername());
             preparedStatement.setString(3, gameData.blackUsername());
@@ -145,8 +146,28 @@ public class SQLGame  implements  GameDAO{
 
     @Override
     public void updateGame(GameData gameData) throws DataAccessException {
+        var statement = "UPDATE games SET whiteUsername = ?, blackUsername = ?, name = ?, game = ? WHERE ID = ?";
+        Gson gson = new GsonBuilder().enableComplexMapKeySerialization().create();
+        var json = gson.toJson(gameData.game());
 
+        try (var conn = DatabaseManager.getConnection();
+             var preparedStatement = conn.prepareStatement(statement)) {
+
+            preparedStatement.setString(1, gameData.whiteUsername());
+            preparedStatement.setString(2, gameData.blackUsername());
+            preparedStatement.setString(3, gameData.gameName());
+            preparedStatement.setString(4, json);
+            preparedStatement.setInt(5, gameData.gameID());
+
+            int rowsUpdated = preparedStatement.executeUpdate();
+            if (rowsUpdated == 0) {
+                throw new DataAccessException(500, "Error");
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException(500, e.getMessage());
+        }
     }
+
 
     @Override
     public void clear() throws DataAccessException {

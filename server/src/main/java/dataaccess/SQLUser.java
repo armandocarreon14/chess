@@ -107,13 +107,12 @@ public class SQLUser  implements UserDAO{
 
     @Override
     public void clear() throws DataAccessException {
-        // Removes all records but keeps auto-increment
         String statement = "DELETE FROM users";
 
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(statement)) {
 
-            ps.executeUpdate();  //execute the update
+            ps.executeUpdate();
 
         } catch (SQLException e) {
             throw new DataAccessException(500, "Database error while clearing users: " + e.getMessage());

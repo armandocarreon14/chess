@@ -113,7 +113,11 @@ public class SQLGame  implements  GameDAO{
             preparedStatement.setString(3, gameData.blackUsername());
             preparedStatement.setString(4, gameData.gameName());
             preparedStatement.setString(5, json);
+
+            //preparedStatement.executeUpdate(statement, gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), json);
+            //preparedStatement.executeUpdate();
         }
+
         catch (Throwable e) {
             throw new DataAccessException(500, String.format("unable to update database: %s, %s", statement, e.getMessage()));
         }

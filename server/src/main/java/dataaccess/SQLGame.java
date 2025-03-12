@@ -59,7 +59,7 @@ public class SQLGame  implements  GameDAO{
 
         try (var conn = DatabaseManager.getConnection();
              var ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS);
-             var rs = ps.executeQuery()) {//result set
+             var rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 int id = rs.getInt("ID");
@@ -93,7 +93,6 @@ public class SQLGame  implements  GameDAO{
             preparedStatement.setString(4, gameData.gameName());
             preparedStatement.setString(5, json);
 
-            //preparedStatement.executeUpdate(statement, gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), json);
             preparedStatement.executeUpdate();
 
         }

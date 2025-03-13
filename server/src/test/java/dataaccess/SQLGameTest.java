@@ -21,7 +21,6 @@ public class SQLGameTest {
     @Test
     public void creteGameValid() throws DataAccessException {
         GameData gameData = new GameData(1, "White Username", "Black Username", "Game Name", new ChessGame());
-
         gameDAO.createGame(gameData);
 
         GameData game = gameDAO.getGame(1);

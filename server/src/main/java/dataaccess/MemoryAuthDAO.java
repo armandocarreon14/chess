@@ -9,8 +9,9 @@ public class MemoryAuthDAO implements AuthDAO {
     final private HashMap<String, AuthData> authMap = new HashMap<>();
 
     @Override
-    public void createAuth(AuthData auth) throws DataAccessException {
+    public AuthData createAuth(AuthData auth) throws DataAccessException {
         authMap.put(auth.authToken(), auth);
+        return auth;
     }
 
     @Override

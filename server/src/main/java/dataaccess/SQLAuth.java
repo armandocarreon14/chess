@@ -59,7 +59,7 @@ public class SQLAuth implements AuthDAO {
     }
 
     @Override
-    public void createAuth(AuthData auth) {
+    public AuthData createAuth(AuthData auth) {
         var statement = "INSERT INTO auths (authToken, username) VALUES (?, ?)";
         try {
             executeUpdate(statement, auth.authToken(), auth.username());
@@ -67,6 +67,7 @@ public class SQLAuth implements AuthDAO {
         catch (Throwable ex) {
             System.out.println(ex.getMessage());
         }
+        return auth;
     }
 
     @Override

@@ -1,7 +1,5 @@
 package dataaccess;
 
-import chess.ChessGame;
-import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,32 +19,28 @@ public class SQLUserTest {
 
     @Test
     public void createUserValid() throws DataAccessException {
-        SQLUser sqlUser = new SQLUser();
         UserData userData = new UserData("username", "passweord", "email");
-        sqlUser.createUser(userData);
+        userDAO.createUser(userData);
 
-        UserData user = sqlUser.getUser("username");
+        UserData user = userDAO.getUser("username");
         assertEquals("username", user.username());
     }
 
     @Test
     public void createUserInvalid() throws DataAccessException {
-        SQLUser sqlUser = new SQLUser();
         UserData userData = new UserData("username", "passweord", "email");
-
-        sqlUser.createUser(userData);
+        userDAO.createUser(userData);
         assertThrows(DataAccessException.class, () -> {
-            sqlUser.createUser(userData);
+            userDAO.createUser(userData);
         });
     }
 
     @Test
     public void getUserValid() throws DataAccessException {
-        SQLUser sqlUser = new SQLUser();
         UserData userData = new UserData("username", "passweord", "email");
-        sqlUser.createUser(userData);
+        userDAO.createUser(userData);
 
-        UserData user = sqlUser.getUser("username");
+        UserData user = userDAO.getUser("username");
         assertEquals("username", user.username());
     }
 
@@ -60,15 +54,13 @@ public class SQLUserTest {
 
     @Test
     public void clearValid() throws DataAccessException {
-        SQLUser sqlUser = new SQLUser();
         UserData userData = new UserData("username", "passweord", "email");
-        sqlUser.createUser(userData);
+        userDAO.createUser(userData);
 
-        sqlUser.clear();
-        UserData user = sqlUser.getUser("username");
+        userDAO.clear();
+        UserData user = userDAO.getUser("username");
         assertNull(user);
     }
-
 
 }
 

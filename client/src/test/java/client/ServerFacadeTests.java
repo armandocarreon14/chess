@@ -21,11 +21,9 @@ public class ServerFacadeTests {
     }
 
 
-    /// Replace the sampleTest method with your own unit tests.
     @Test
     public void sampleTest() {
         Assertions.assertTrue(true);
     }
-
 
 }

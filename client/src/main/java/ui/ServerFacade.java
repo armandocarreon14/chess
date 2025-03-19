@@ -1,5 +1,6 @@
 package ui;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import exception.ResponseException;
 
@@ -10,6 +11,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+
 import requestandresults.RegisterResult;
 import requestandresults.*;
 
@@ -82,5 +84,24 @@ public class ServerFacade {
         return this.makeRequest("POST", path, request, LoginResult.class);
     }
 
+    public void logout(LogoutRequest request) throws Exception {
+        this.makeRequest("DELETE", "/session", null, null);
+        authToken = null;
+    }
+
+    public ListGamesResult listGames(ListGamesRequest request) throws Exception {
+        var path = "/game";
+        return this.makeRequest("GET", path, request, ListGamesResult.class);
+    }
+
+    public void join(String authToken, int gameID, ChessGame.TeamColor playerColor) throws Exception {
+        this.makeRequest("PUT", "/game",
+                new JoinGameRequest(authToken, playerColor, gameID), null);
+    }
+
+    public void clear() throws Exception {
+        var path = "/db";
+        makeRequest("DELETE", path, null, null);
+    }
 
 }

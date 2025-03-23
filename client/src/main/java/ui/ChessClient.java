@@ -11,11 +11,13 @@ public class ChessClient {
 
     private final ServerFacade server;
     private State state = State.SIGNEDOUT;
+    private final String serverUrl;
     private String username = null;
 
 
-    public ChessClient(ServerFacade server) {
-        this.server = server;
+    public ChessClient(String serverurl) {
+        server = new ServerFacade(serverurl);
+        this.serverUrl = serverurl;
     }
 
     public String eval(String input) {

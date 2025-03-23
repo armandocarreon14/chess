@@ -84,11 +84,10 @@ public class ServerFacade {
         return this.makeRequest("POST", path, request, LoginResult.class);
     }
 
-    public void logout() throws Exception {
-        this.makeRequest("DELETE", "/session", null, null);
-        authToken = null;
+    public Object logout(String authToken) throws Exception {
+        var path = "/session";
+        return this.makeRequest("DELETE", path, null, null);
     }
-
     public ListGamesResult listGames(ListGamesRequest request) throws Exception {
         var path = "/game";
         return this.makeRequest("GET", path, request, ListGamesResult.class);
@@ -102,6 +101,11 @@ public class ServerFacade {
     public void clear() throws Exception {
         var path = "/db";
         makeRequest("DELETE", path, null, null);
+    }
+
+    public CreateGameResult createGame(CreateGameRequest request) throws Exception {
+        var path = "/game";
+        return this.makeRequest("POST", path, request, CreateGameResult.class);
     }
 
 }

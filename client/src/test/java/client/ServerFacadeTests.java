@@ -25,12 +25,16 @@ public class ServerFacadeTests {
         facade.clear();
     }
 
+    @BeforeEach
+    public void resetDatabase() throws Exception {
+        facade.clear();
+    }
+
+
     @AfterAll
     static void stopServer() {
         server.stop();
     }
-
-
 
     @Test
     public void registerValid() throws Exception {
@@ -79,6 +83,8 @@ public class ServerFacadeTests {
         CreateGameRequest createGameRequest = new CreateGameRequest("gameName", auth);
         assertThrows(ResponseException.class, () -> facade.createGame(createGameRequest));
     }
+
+
 
     @Test
     public void listGamesValid() throws Exception {

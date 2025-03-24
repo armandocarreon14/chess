@@ -18,10 +18,10 @@ public class ServerFacadeTests {
     @BeforeAll
     public static void init() throws Exception {
         server = new Server();
-        var port = server.run(0);
+        var port = server.run(8080);
         System.out.println("Started test HTTP server on " + port);
-        var sererURL = "http://localhost:" + port;
-        facade = new ServerFacade(sererURL);
+        var serverURL = "http://localhost:8080";
+        facade = new ServerFacade(serverURL);
         facade.clear();
     }
 
@@ -90,7 +90,6 @@ public class ServerFacadeTests {
         assertNotNull(facade.listGames(listGamesRequest));
     }
 
-
     @Test
     public void listGamesInvalid() {
         ListGamesRequest request = new ListGamesRequest("invalidAuthToken");
@@ -105,7 +104,6 @@ public class ServerFacadeTests {
         facade.join(authToken, gameID, playerColor);
     }
 
-
     @Test
     public void joinGameInvalid() throws Exception {
         if (authToken == null) {
@@ -116,9 +114,27 @@ public class ServerFacadeTests {
 
     @Test
     public void clearValid() throws Exception {
-        facade.clear(); // Assuming this deletes all data
+        facade.clear();
     }
 
+    @Test
+    public void logoutValid() throws Exception {
+        RegisterRequest regRequest = new RegisterRequest("username", "password", "email");
+        facade.register(regRequest);
+        LoginRequest request = new LoginRequest("username", "password");
+        LoginResult result = facade.login(request);
+        authToken = result.authToken();
+        assertDoesNotThrow(() -> facade.logout(authToken));
+    }
 
+    @Test
+    public void logoutInvalid() throws Exception {
+        RegisterRequest regRequest = new RegisterRequest("username", "password", "email");
+        facade.register(regRequest);
+        LoginRequest request = new LoginRequest("username", "password");
+        LoginResult result = facade.login(request);
+        authToken = result.authToken();
+        assertThrows(ResponseException.class, () -> facade.logout(authToken));
+    }
 
 }

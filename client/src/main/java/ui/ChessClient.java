@@ -1,11 +1,8 @@
 package ui;
 
 import exception.ResponseException;
-import model.AuthData;
 import requestandresults.*;
-
 import java.util.Arrays;
-
 import static ui.EscapeSequences.SET_TEXT_COLOR_GREEN;
 import static ui.ServerFacade.authToken;
 
@@ -85,7 +82,7 @@ public class ChessClient {
         return String.format(SET_TEXT_COLOR_GREEN + "Game created successfully: %s\n\n%s", gameName,help());
     }
 
-    public String list(String... params) {
+    public String list(String... params) throws ResponseException {
         return "";
     }
 

@@ -92,7 +92,8 @@ public class ServerFacade {
 
     public Object logout(String authToken) throws Exception {
         var path = "/session";
-        return this.makeRequest("DELETE", path, null, null);
+        LogoutRequest logoutRequest = new LogoutRequest(authToken);
+        return this.makeRequest("DELETE", path, logoutRequest, null);
     }
     public ListGamesResult listGames(ListGamesRequest request) throws Exception {
         var path = "/game";

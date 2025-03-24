@@ -32,6 +32,7 @@ public class ChessClient {
                 case "list" -> list();
                 case "join" -> join(params);
                 case "logout" -> logout();
+                case "observe" -> observe(params);
                 default -> help();
             };
         } catch (Exception ex) {
@@ -90,6 +91,10 @@ public class ChessClient {
         return "";
     }
 
+    public String observe(String... params) throws ResponseException {
+        return "";
+    }
+
     public String logout(String... params) {
         return "";
     }
@@ -119,6 +124,7 @@ public class ChessClient {
             throw new ResponseException(400, "You must sign in");
         }
     }
+
 
 
 }

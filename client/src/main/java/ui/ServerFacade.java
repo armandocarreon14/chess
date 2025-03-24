@@ -100,9 +100,14 @@ public class ServerFacade {
         return this.makeRequest("GET", path, request, ListGamesResult.class);
     }
 
-    public void join(String authToken, int gameID, ChessGame.TeamColor playerColor) throws Exception {
-        this.makeRequest("PUT", "/game",
-                new JoinGameRequest(authToken, playerColor, gameID), null);
+    public void join(String authToken, ChessGame.TeamColor playerColor, int gameID) throws Exception {
+        var path = "/game";
+        makeRequest("PUT", path, new JoinGameRequest(authToken, playerColor, gameID), null);
+    }
+
+    public void observe(int gameID) throws Exception {
+        var path = "/game";
+        makeRequest("PUT", path, new JoinGameRequest(authToken, null, gameID), null);
     }
 
     public void clear() throws Exception {

@@ -27,14 +27,14 @@ public class ServerFacade {
             URL url = (new URI(serverUrl + path)).toURL();
             HttpURLConnection http = (HttpURLConnection) url.openConnection();
             http.setRequestMethod(method);
-            if (authToken != null) {
-                http.setRequestProperty("Authorization", authToken);
-            }
             http.setDoOutput(true);
+
             writeBody(request, http);
             http.connect();
             throwIfNotSuccessful(http);
             return readBody(http, responseClass);
+        } catch (ResponseException ex) {
+            throw ex;
         } catch (Exception ex) {
             throw new ResponseException(500, ex.getMessage());
         }
@@ -53,7 +53,13 @@ public class ServerFacade {
     private void throwIfNotSuccessful(HttpURLConnection http) throws IOException, ResponseException {
         var status = http.getResponseCode();
         if (!isSuccessful(status)) {
-            throw new ResponseException(status, "failure: " + status);
+            try (InputStream respErr = http.getErrorStream()) {
+                if (respErr != null) {
+                    throw ResponseException.fromJson(respErr);
+                }
+            }
+
+            throw new ResponseException(status, "other failure: " + status);
         }
     }
 
@@ -103,9 +109,9 @@ public class ServerFacade {
         makeRequest("DELETE", path, null, null);
     }
 
-    public CreateGameResult createGame(CreateGameRequest request) throws Exception {
+    public void createGame(CreateGameRequest request) throws Exception {
         var path = "/game";
-        return this.makeRequest("POST", path, request, CreateGameResult.class);
+        this.makeRequest("POST", path, request, CreateGameResult.class);
     }
 
 }

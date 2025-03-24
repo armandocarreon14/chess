@@ -1,10 +1,12 @@
 package ui;
 
 import exception.ResponseException;
+import model.AuthData;
 import requestandresults.*;
 
 import java.util.Arrays;
 
+import static ui.EscapeSequences.SET_TEXT_COLOR_GREEN;
 import static ui.ServerFacade.authToken;
 
 public class ChessClient {
@@ -43,7 +45,7 @@ public class ChessClient {
     public String register(String... params) {
         try {
             if (params.length == 3) {
-                state = state.SIGNEDIN;
+                state = State.SIGNEDIN;
                 RegisterResult registerResult = server.register(new RegisterRequest(params[0], params[1], params[2]));
                 username = registerResult.username();
                 return String.format("You registered as %s.", username);
@@ -58,7 +60,7 @@ public class ChessClient {
     public String login(String... params) {
         try {
             if (params.length == 2) {
-                state = state.SIGNEDIN;
+                state = State.SIGNEDIN;
                 LoginResult loginResult = server.login(new LoginRequest(params[0], params[1]));
                 username = loginResult.username();
                 return String.format("You logged in as %s.", username);
@@ -70,18 +72,17 @@ public class ChessClient {
         return "Login error";
     }
 
-    public String create(String... params) {
-        try {
-            if (params.length == 1) {
-                state = state.SIGNEDIN;
-                CreateGameRequest createGameRequest = new CreateGameRequest("gameName", authToken);
-                server.createGame(createGameRequest);
-                return String.format("You created the game game %s.", createGameRequest.gameName());
-            }
-        } catch (Exception e) {
-            return "Create Game error: " + e.getMessage();
+    public String create(String... params) throws Exception {
+        assertSignedIn();
+        if (params.length != 1) {
+            throw new ResponseException(400, "Expected: <game name>");
         }
-        return "Create Game error: incorrect usage";
+        var gameName = params[0];
+
+        CreateGameRequest createGameRequest = new CreateGameRequest(gameName, authToken);
+        server.createGame(createGameRequest);
+
+        return String.format(SET_TEXT_COLOR_GREEN + "Game created successfully: %s\n\n%s", gameName,help());
     }
 
     public String list(String... params) {
@@ -97,7 +98,29 @@ public class ChessClient {
     }
 
     public String help(String... params) {
-        return "";
+        if (state == State.SIGNEDOUT) {
+            return """
+                    - Register <username> <password> <email>
+                    - Login <username> <password>
+                    - Help
+                    - Quit
+                    """;
+        }
+        return """
+                 - CreateGame <game name>
+                 - ListGames
+                 - JoinGame <gameID> <playerColor>
+                 - ObserveGame <gameID>
+                 - Logout <authentication token>
+                 - Help
+                 - Quit
+                """;
+    }
+
+    private void assertSignedIn() throws ResponseException {
+        if (state == State.SIGNEDOUT) {
+            throw new ResponseException(400, "You must sign in");
+        }
     }
 
 

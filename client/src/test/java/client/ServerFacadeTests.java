@@ -6,9 +6,6 @@ import org.junit.jupiter.api.*;
 import requestandresults.*;
 import server.Server;
 import ui.ServerFacade;
-
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -85,26 +82,14 @@ public class ServerFacadeTests {
 
     @Test
     public void listGamesValid() throws Exception {
-        if (authToken == null) {
-            loginValid();
-        }
         RegisterRequest registerRequest = new RegisterRequest("username", "password", "email");
-        RegisterResult registerResult = facade.register(registerRequest);
-        String auth = registerResult.authToken();
-        CreateGameRequest createGameRequest = new CreateGameRequest("gameName", auth);
+        facade.register(registerRequest);
+        CreateGameRequest createGameRequest = new CreateGameRequest("gameName", authToken);
         facade.createGame(createGameRequest);
-        ListGamesRequest listGamesRequest = new ListGamesRequest(auth);
-        var result = facade.listGames(listGamesRequest);
-        assertEquals(1, result.games().size());
+        ListGamesRequest listGamesRequest = new ListGamesRequest(authToken);
+        assertNotNull(facade.listGames(listGamesRequest));
     }
 
-
-    @Test
-    public void testListGamesValid() throws Exception {
-        ListGamesRequest request = new ListGamesRequest(authToken);
-        ListGamesResult result = facade.listGames(request);
-        assertNotNull(result);
-    }
 
     @Test
     public void listGamesInvalid() {

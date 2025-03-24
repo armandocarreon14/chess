@@ -1,6 +1,8 @@
 package ui;
 
 import java.util.Scanner;
+import static com.sun.org.apache.xalan.internal.xsltc.compiler.Constants.RESET;
+import static java.awt.Color.*;
 
 public class Repl {
 
@@ -12,7 +14,7 @@ public class Repl {
     }
 
     public void run() {
-        System.out.println("Welcome");
+        System.out.println("Welcome to the best game ever: CHESS");
         System.out.print(client.help());
 
         Scanner scanner = new Scanner(System.in);
@@ -23,7 +25,7 @@ public class Repl {
 
             try {
                 result = client.eval(line);
-                System.out.print(result);
+                System.out.print(BLUE + result);
             } catch (Throwable e) {
                 var msg = e.toString();
                 System.out.print(msg);
@@ -33,7 +35,7 @@ public class Repl {
     }
 
     private void printPrompt() {
-        System.out.print("\n" + ">>> ");
+        System.out.print("\n" + RESET + ">>> " + GREEN);
     }
 
 }

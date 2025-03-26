@@ -99,7 +99,7 @@ public class ServerFacade {
     }
 
     //list games should not pass a body
-    public ListGamesResult listGames(String authToken) throws Exception {
+    public ListGamesResult listGames() throws Exception {
         var path = "/game";
         return this.makeRequest("GET", path, null, ListGamesResult.class, authToken);
     }

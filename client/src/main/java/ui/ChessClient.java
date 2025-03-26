@@ -13,6 +13,7 @@ public class ChessClient {
     private final String serverUrl;
     private final CreateBoard board;
     private String username = null;
+    private final String authToken = ServerFacade.authToken;
 
 
     public ChessClient(String serverurl) {
@@ -87,8 +88,30 @@ public class ChessClient {
     }
 
     public String list(String... params) throws ResponseException {
-        return "";
+        assertSignedIn();
+
+        try {
+            ListGamesResult listGamesResult = server.listGames();
+            var games = listGamesResult.games();
+
+            if (games.isEmpty()) {
+                return "No games available.";
+            }
+
+            StringBuilder sb = new StringBuilder("Available games:\n");
+            for (var game : games) {
+                sb.append(String.format("Game name: %s, White: %s, Black: %s\n",
+                        game.gameName(),
+                        game.whiteUsername() != null ? game.whiteUsername() : "Open",
+                        game.blackUsername() != null ? game.blackUsername() : "Open"));
+            }
+
+            return sb.toString();
+        } catch (Exception e) {
+            return "Error retrieving game list: " + e.getMessage();
+        }
     }
+
 
     public String join(String... params) throws ResponseException {
         return "";

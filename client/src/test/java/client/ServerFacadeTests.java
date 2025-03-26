@@ -93,7 +93,7 @@ public class ServerFacadeTests {
 
         assertNotNull(listGamesResult);
     }
-
+//
     @Test
     public void list_Invalid() throws Exception {
         facade.register(new RegisterRequest("u", "p", "e"));

@@ -20,7 +20,7 @@ public class Repl {
         Scanner scanner = new Scanner(System.in);
         var result = "";
         while (!result.equals("quit")) {
-            //printPrompt();
+            printPrompt();
             String line = scanner.nextLine();
 
             try {

@@ -43,7 +43,7 @@ public class ServerFacadeTests {
     }
 
     @Test
-    public void registerInvalid() throws Exception {
+    public void registerInvalid()  {
         RegisterRequest request = new RegisterRequest(null, "password", "email");
         assertThrows(ResponseException.class, () -> facade.register(request));
     }

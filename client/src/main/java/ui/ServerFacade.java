@@ -85,9 +85,12 @@ public class ServerFacade {
         return this.makeRequest("POST", path, request, RegisterResult.class, null);
     }
 
+    /// when i list, logout etc i should use this authtoken
     public LoginResult login(LoginRequest request) throws Exception {
         var path = "/session";
-        return this.makeRequest("POST", path, request, LoginResult.class, null);
+        LoginResult loginResult = this.makeRequest("POST", path, request, LoginResult.class, null);
+        authToken = loginResult.authToken();
+        return loginResult;
     }
 
     public Object logout(String authToken) throws Exception {
@@ -113,7 +116,7 @@ public class ServerFacade {
 
     public void createGame(CreateGameRequest request) throws Exception {
         var path = "/game";
-        this.makeRequest("POST", path, request, CreateGameResult.class, request.authToken());
+        this.makeRequest("POST", path, request, CreateGameResult.class, authToken);
     }
 
 }

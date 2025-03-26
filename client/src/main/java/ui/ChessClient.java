@@ -5,7 +5,6 @@ import requestandresults.*;
 
 import java.util.Arrays;
 import static ui.EscapeSequences.SET_TEXT_COLOR_GREEN;
-import static ui.ServerFacade.authToken;
 
 public class ChessClient {
 
@@ -43,11 +42,11 @@ public class ChessClient {
         }
     }
 
-    public String register(String... params) {
+    public String register(String... params) throws ResponseException {
         try {
             if (params.length == 3) {
-                state = State.SIGNEDIN;
                 RegisterResult registerResult = server.register(new RegisterRequest(params[0], params[1], params[2]));
+                state = State.SIGNEDIN;
                 username = registerResult.username();
                 return String.format("You registered as %s.", username);
             }
@@ -80,7 +79,7 @@ public class ChessClient {
         }
         var gameName = params[0];
 
-        CreateGameRequest createGameRequest = new CreateGameRequest(gameName, authToken);
+        CreateGameRequest createGameRequest = new CreateGameRequest(gameName, null);
         server.createGame(createGameRequest);
 
         return String.format(SET_TEXT_COLOR_GREEN + "Game created successfully: %s\n\n%s", gameName,help());
@@ -98,10 +97,11 @@ public class ChessClient {
         return "";
     }
 
+    /// check logout
     public String logout(String... params) {
         try {
             assertSignedIn();
-            server.logout(authToken);
+            server.logout(null);
             state = State.SIGNEDOUT;
             return String.format("%s logged out", username);
         }

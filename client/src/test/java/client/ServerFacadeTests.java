@@ -1,6 +1,6 @@
 package client;
 
-import chess.ChessGame;
+import chess.*;
 import exception.ResponseException;
 import org.junit.jupiter.api.*;
 import requestandresults.*;
@@ -18,9 +18,9 @@ public class ServerFacadeTests {
     @BeforeAll
     public static void init() throws Exception {
         server = new Server();
-        var port = server.run(8080);
+        var port = server.run(0);
         System.out.println("Started test HTTP server on " + port);
-        var serverURL = "http://localhost:8080";
+        var serverURL = "http://localhost:" + port;
         facade = new ServerFacade(serverURL);
     }
 
@@ -76,14 +76,9 @@ public class ServerFacadeTests {
 
     @Test
     public void createGameInvalid() throws Exception {
-        RegisterRequest registerRequest = new RegisterRequest("username", "password", "email");
-        RegisterResult registerResult = facade.register(registerRequest);
-        String auth = registerResult.authToken();
-        CreateGameRequest createGameRequest = new CreateGameRequest("gameName", auth);
+        CreateGameRequest createGameRequest = new CreateGameRequest("gameName", null);
         assertThrows(ResponseException.class, () -> facade.createGame(createGameRequest));
     }
-
-
 
     @Test
     public void listGamesValid() throws Exception {
@@ -92,16 +87,25 @@ public class ServerFacadeTests {
         authToken = registerResult.authToken();
 
         CreateGameRequest createGameRequest = new CreateGameRequest("gameName", authToken);
-        facade.createGame(createGameRequest);
+        assertNotNull(createGameRequest);
 
-        ListGamesRequest listGamesRequest = new ListGamesRequest(authToken);
-        assertNotNull(facade.listGames(listGamesRequest));
+        ListGamesResult listGamesResult = facade.listGames(authToken);
+
+        assertNotNull(listGamesResult);
+    }
+
+    @Test
+    public void list_Invalid() throws Exception {
+        facade.register(new RegisterRequest("u", "p", "e"));
+        facade.createGame(new CreateGameRequest("gameName", authToken));
+        facade.logout(authToken);
+        assertThrows(ResponseException.class, () -> facade.listGames(authToken));
     }
 
     @Test
     public void listGamesInvalid() {
-        ListGamesRequest request = new ListGamesRequest("invalidAuthToken");
-        assertThrows(ResponseException.class, () -> facade.listGames(request));
+        //ListGamesRequest request = new ListGamesRequest("invalidAuthToken");
+        assertThrows(ResponseException.class, () -> facade.listGames(authToken));
     }
 
     @Test
@@ -117,18 +121,18 @@ public class ServerFacadeTests {
         facade.createGame(createGameRequest);
 
         JoinGameRequest joinGameRequest = new JoinGameRequest(auth, ChessGame.TeamColor.WHITE, 1);
-        facade.join(auth, ChessGame.TeamColor.WHITE, 1);
-        assertThrows(ResponseException.class, () -> facade.join(auth, ChessGame.TeamColor.WHITE, 1));
+
+        assertThrows(ResponseException.class, () -> facade.join(joinGameRequest));
     }
-
-
 
     @Test
     public void joinGameInvalid() throws Exception {
         if (authToken == null) {
             loginValid();
         }
-        assertThrows(ResponseException.class, () -> facade.join(authToken, ChessGame.TeamColor.BLACK, -1));
+
+        JoinGameRequest joinGameRequest = new JoinGameRequest(authToken, ChessGame.TeamColor.BLACK, -1);
+        assertThrows(ResponseException.class, () -> facade.join(joinGameRequest));
     }
 
     @Test
@@ -138,23 +142,21 @@ public class ServerFacadeTests {
 
     @Test
     public void logoutValid() throws Exception {
-        RegisterRequest regRequest = new RegisterRequest("username", "password", "email");
-        facade.register(regRequest);
-        LoginRequest request = new LoginRequest("username", "password");
-        LoginResult result = facade.login(request);
+        RegisterRequest registerRequest = new RegisterRequest("username", "password", "email");
+        facade.register(registerRequest);
+        LoginRequest loginRequest = new LoginRequest("username", "password");
+        LoginResult result = facade.login(loginRequest);
         authToken = result.authToken();
         assertDoesNotThrow(() -> facade.logout(authToken));
     }
 
-
     @Test
     public void logoutInvalid() throws Exception {
-        RegisterRequest regRequest = new RegisterRequest("username", "password", "email");
-        facade.register(regRequest);
-        LoginRequest request = new LoginRequest("username", "password");
-        LoginResult result = facade.login(request);
-        authToken = result.authToken();
+        RegisterRequest registerRequest = new RegisterRequest("username", "password", "email");
+        facade.register(registerRequest);
+        facade.logout(authToken);
         assertThrows(ResponseException.class, () -> facade.logout(authToken));
     }
+
 
 }

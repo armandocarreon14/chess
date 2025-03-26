@@ -1,10 +1,9 @@
 package server;
 
-import requestandresults.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import dataaccess.DataAccessException;
-
+import requestandresults.*;
 import service.GameService;
 import spark.Request;
 import spark.Response;

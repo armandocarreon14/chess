@@ -1,13 +1,14 @@
 package service;
 
 import org.mindrot.jbcrypt.BCrypt;
-import requestandresults.*;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
 import dataaccess.UserDAO;
 import model.AuthData;
 import model.UserData;
+import requestandresults.*;
+import requestandresults.RegisterResult;
 
 import java.util.UUID;
 

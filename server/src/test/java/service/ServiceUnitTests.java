@@ -1,12 +1,12 @@
 package service;
 
-import requestandresults.*;
 import chess.ChessGame;
 import dataaccess.*;
 import model.AuthData;
 import model.GameData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import requestandresults.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 

@@ -1,6 +1,5 @@
 package ui;
 
-import chess.ChessGame;
 import com.google.gson.Gson;
 import exception.ResponseException;
 
@@ -12,8 +11,8 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 
-import requestandresults.RegisterResult;
 import requestandresults.*;
+import requestandresults.RegisterResult;
 
 public class ServerFacade {
 
@@ -22,14 +21,15 @@ public class ServerFacade {
 
     public ServerFacade(String url) { serverUrl = url;}
 
-    private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws Exception {
+    private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass, String authToken) throws Exception {
         try {
             URL url = (new URI(serverUrl + path)).toURL();
             HttpURLConnection http = (HttpURLConnection) url.openConnection();
             http.setRequestMethod(method);
-            http.setDoOutput(true);
-
+            http.setRequestProperty("Authorization", authToken);
+            http.setDoOutput(!method.equals("GET"));
             writeBody(request, http);
+
             http.connect();
             throwIfNotSuccessful(http);
             return readBody(http, responseClass);
@@ -82,42 +82,38 @@ public class ServerFacade {
 
     public RegisterResult register(RegisterRequest request) throws Exception {
         var path = "/user";
-        return this.makeRequest("POST", path, request, RegisterResult.class);
+        return this.makeRequest("POST", path, request, RegisterResult.class, null);
     }
 
     public LoginResult login(LoginRequest request) throws Exception {
         var path = "/session";
-        return this.makeRequest("POST", path, request, LoginResult.class);
+        return this.makeRequest("POST", path, request, LoginResult.class, null);
     }
 
     public Object logout(String authToken) throws Exception {
         var path = "/session";
-        LogoutRequest logoutRequest = new LogoutRequest(authToken);
-        return this.makeRequest("DELETE", path, logoutRequest, null);
-    }
-    public ListGamesResult listGames(ListGamesRequest request) throws Exception {
-        var path = "/game";
-        return this.makeRequest("GET", path, request, ListGamesResult.class);
+        return this.makeRequest("DELETE", path, null, null, authToken);
     }
 
-    public void join(String authToken, ChessGame.TeamColor playerColor, int gameID) throws Exception {
+    //list games should not pass a body
+    public ListGamesResult listGames(String authToken) throws Exception {
         var path = "/game";
-        makeRequest("PUT", path, new JoinGameRequest(authToken, playerColor, gameID), null);
+        return this.makeRequest("GET", path, null, ListGamesResult.class, authToken);
     }
 
-    public void observe(int gameID) throws Exception {
+    public void join(JoinGameRequest request) throws Exception {
         var path = "/game";
-        makeRequest("PUT", path, new JoinGameRequest(authToken, null, gameID), null);
+        makeRequest("PUT", path, request, null, request.authToken());
     }
 
     public void clear() throws Exception {
         var path = "/db";
-        makeRequest("DELETE", path, null, null);
+        makeRequest("DELETE", path, null, null, null);
     }
 
     public void createGame(CreateGameRequest request) throws Exception {
         var path = "/game";
-        this.makeRequest("POST", path, request, CreateGameResult.class);
+        this.makeRequest("POST", path, request, CreateGameResult.class, request.authToken());
     }
 
 }

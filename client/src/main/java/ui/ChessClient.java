@@ -2,6 +2,7 @@ package ui;
 
 import exception.ResponseException;
 import requestandresults.*;
+
 import java.util.Arrays;
 import static ui.EscapeSequences.SET_TEXT_COLOR_GREEN;
 import static ui.ServerFacade.authToken;
@@ -11,12 +12,14 @@ public class ChessClient {
     private final ServerFacade server;
     private State state = State.SIGNEDOUT;
     private final String serverUrl;
+    private final CreateBoard board;
     private String username = null;
 
 
     public ChessClient(String serverurl) {
         server = new ServerFacade(serverurl);
         this.serverUrl = serverurl;
+        this.board = new CreateBoard();
     }
 
     public String eval(String input) {
@@ -87,7 +90,7 @@ public class ChessClient {
         return "";
     }
 
-    public String join(String... params) {
+    public String join(String... params) throws ResponseException {
         return "";
     }
 
@@ -96,7 +99,15 @@ public class ChessClient {
     }
 
     public String logout(String... params) {
-        return "";
+        try {
+            assertSignedIn();
+            server.logout(authToken);
+            state = State.SIGNEDOUT;
+            return String.format("%s logged out", username);
+        }
+        catch (Exception e) {
+            return "Logout error: " + e.getMessage();
+        }
     }
 
     public String help(String... params) {

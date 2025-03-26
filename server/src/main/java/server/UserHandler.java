@@ -1,8 +1,8 @@
 package server;
 
-import requestandresults.*;
 import com.google.gson.Gson;
 import dataaccess.*;
+import requestandresults.*;
 import spark.Request;
 import spark.Response;
 

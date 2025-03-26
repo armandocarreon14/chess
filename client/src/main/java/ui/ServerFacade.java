@@ -93,7 +93,7 @@ public class ServerFacade {
         return loginResult;
     }
 
-    public Object logout(String authToken) throws Exception {
+    public Object logout() throws Exception {
         var path = "/session";
         return this.makeRequest("DELETE", path, null, null, authToken);
     }

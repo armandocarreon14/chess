@@ -125,14 +125,15 @@ public class ChessClient {
     public String logout(String... params) {
         try {
             assertSignedIn();
-            server.logout(null);
+            server.logout();
             state = State.SIGNEDOUT;
-            return String.format("%s logged out", username);
-        }
-        catch (Exception e) {
+            username = null;
+            return "Successfully logged out.";
+        } catch (Exception e) {
             return "Logout error: " + e.getMessage();
         }
     }
+
 
     public String help(String... params) {
         if (state == State.SIGNEDOUT) {

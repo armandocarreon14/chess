@@ -85,7 +85,7 @@ public class ServerFacade {
         return this.makeRequest("POST", path, request, RegisterResult.class, null);
     }
 
-    /// when i list, logout etc i should use this authtoken
+    /// when i list, logout etc i should use this authtoken !
     public LoginResult login(LoginRequest request) throws Exception {
         var path = "/session";
         LoginResult loginResult = this.makeRequest("POST", path, request, LoginResult.class, null);

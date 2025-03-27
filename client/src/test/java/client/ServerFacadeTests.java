@@ -8,7 +8,6 @@ import server.Server;
 import ui.ServerFacade;
 import static org.junit.jupiter.api.Assertions.*;
 
-
 public class ServerFacadeTests {
 
     private static Server server;
@@ -28,7 +27,6 @@ public class ServerFacadeTests {
     public void resetDatabase() throws Exception {
         facade.clear();
     }
-
 
     @AfterAll
     static void stopServer() {
@@ -84,28 +82,18 @@ public class ServerFacadeTests {
     public void listGamesValid() throws Exception {
         RegisterRequest registerRequest = new RegisterRequest("username", "password", "email");
         RegisterResult registerResult = facade.register(registerRequest);
-        authToken = registerResult.authToken();
+        authToken = null;
 
         CreateGameRequest createGameRequest = new CreateGameRequest("gameName", authToken);
-        assertNotNull(createGameRequest);
+        facade.createGame(createGameRequest);
 
-        ListGamesResult listGamesResult = facade.listGames(authToken);
-
+        ListGamesResult listGamesResult = facade.listGames();
         assertNotNull(listGamesResult);
-    }
-//
-    @Test
-    public void list_Invalid() throws Exception {
-        facade.register(new RegisterRequest("u", "p", "e"));
-        facade.createGame(new CreateGameRequest("gameName", authToken));
-        facade.logout(authToken);
-        assertThrows(ResponseException.class, () -> facade.listGames(authToken));
     }
 
     @Test
     public void listGamesInvalid() {
-        //ListGamesRequest request = new ListGamesRequest("invalidAuthToken");
-        assertThrows(ResponseException.class, () -> facade.listGames(authToken));
+        assertThrows(ResponseException.class, () -> facade.listGames());
     }
 
     @Test
@@ -121,8 +109,10 @@ public class ServerFacadeTests {
         facade.createGame(createGameRequest);
 
         JoinGameRequest joinGameRequest = new JoinGameRequest(auth, ChessGame.TeamColor.WHITE, 1);
+        int gameID = joinGameRequest.gameID();
+        ChessGame.TeamColor teamColor = joinGameRequest.playerColor();
 
-        assertThrows(ResponseException.class, () -> facade.join(joinGameRequest));
+        assertThrows(ResponseException.class, () -> facade.join(gameID, teamColor));
     }
 
     @Test
@@ -132,7 +122,9 @@ public class ServerFacadeTests {
         }
 
         JoinGameRequest joinGameRequest = new JoinGameRequest(authToken, ChessGame.TeamColor.BLACK, -1);
-        assertThrows(ResponseException.class, () -> facade.join(joinGameRequest));
+        int gameID = joinGameRequest.gameID();
+        ChessGame.TeamColor teamColor = joinGameRequest.playerColor();
+        assertThrows(ResponseException.class, () -> facade.join(gameID, teamColor));
     }
 
     @Test
@@ -147,16 +139,15 @@ public class ServerFacadeTests {
         LoginRequest loginRequest = new LoginRequest("username", "password");
         LoginResult result = facade.login(loginRequest);
         authToken = result.authToken();
-        assertDoesNotThrow(() -> facade.logout(authToken));
+        assertDoesNotThrow(() -> facade.logout());
     }
 
     @Test
     public void logoutInvalid() throws Exception {
         RegisterRequest registerRequest = new RegisterRequest("username", "password", "email");
         facade.register(registerRequest);
-        facade.logout(authToken);
-        assertThrows(ResponseException.class, () -> facade.logout(authToken));
+        facade.logout();
+        assertThrows(ResponseException.class, () -> facade.logout());
     }
-
 
 }

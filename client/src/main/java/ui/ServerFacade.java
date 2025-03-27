@@ -1,5 +1,6 @@
 package ui;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import exception.ResponseException;
 
@@ -55,10 +56,10 @@ public class ServerFacade {
         if (!isSuccessful(status)) {
             try (InputStream respErr = http.getErrorStream()) {
                 if (respErr != null) {
-                    throw ResponseException.fromJson(respErr);
+                    String message = ResponseException.fromJson(respErr);
+                    throw new ResponseException(status, message);
                 }
             }
-
             throw new ResponseException(status, "other failure: " + status);
         }
     }
@@ -82,10 +83,11 @@ public class ServerFacade {
 
     public RegisterResult register(RegisterRequest request) throws Exception {
         var path = "/user";
-        return this.makeRequest("POST", path, request, RegisterResult.class, null);
+        RegisterResult registerResult = this.makeRequest("POST", path, request, RegisterResult.class, null);
+        authToken = registerResult.authToken();
+        return registerResult;
     }
 
-    // when i list, logout etc i should use this authtoken !
     public LoginResult login(LoginRequest request) throws Exception {
         var path = "/session";
         LoginResult loginResult = this.makeRequest("POST", path, request, LoginResult.class, null);
@@ -98,15 +100,14 @@ public class ServerFacade {
         return this.makeRequest("DELETE", path, null, null, authToken);
     }
 
-    //list games should not pass a body
     public ListGamesResult listGames() throws Exception {
         var path = "/game";
         return this.makeRequest("GET", path, null, ListGamesResult.class, authToken);
     }
 
-    public void join(JoinGameRequest request) throws Exception {
-        var path = "/game";
-        makeRequest("PUT", path, request, null, request.authToken());
+    public void join(int gameID, ChessGame.TeamColor playerColor) throws Exception {
+        this.makeRequest("PUT", "/game",
+                new JoinGameRequest(authToken, playerColor, gameID), null, authToken);
     }
 
     public void clear() throws Exception {

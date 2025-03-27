@@ -64,7 +64,6 @@ public class GameService {
             throw new DataAccessException(403, "Error already taken");
         }
 
-
         GameData updatedGameData;
         ChessGame chessGame = gameData.game();
         if (teamColor == ChessGame.TeamColor.BLACK) {
@@ -72,7 +71,6 @@ public class GameService {
         } else {
             updatedGameData = new GameData(gameData.gameID(), authData.username(), gameData.blackUsername(), gameData.gameName(), chessGame);
         }
-
 
         GameData game = updatedGameData;
         gameDAO.updateGame(game);

@@ -21,7 +21,8 @@ public class GameHandler {
     public Object createGameHandler(Request request, Response response) {
         try {
             JsonObject jsonObject = new Gson().fromJson(request.body(), JsonObject.class);
-            jsonObject.addProperty("authToken", request.headers("authorization"));
+            String autorization = request.headers("authorization");
+            jsonObject.addProperty("authToken", autorization);
 
             CreateGameRequest createRequest = new Gson().fromJson(jsonObject, CreateGameRequest.class);
             CreateGameResult createResponse = gameService.createGame(createRequest);

@@ -76,6 +76,7 @@ public class GameService {
         gameDAO.updateGame(game);
     }
 
+
     public ListGamesResult listGames(ListGamesRequest listGamesRequest) throws DataAccessException {
         if (listGamesRequest.authToken() == null) {
             throw new DataAccessException(400, "Error: invalid request");

@@ -110,7 +110,7 @@ public class ChessClient {
 
             StringBuilder sb = new StringBuilder("\nAvailable games:\n" +
                     "~ Use: joingame <GAME_NUMBER> <COLOR> to join the game\n" +
-                    "~ Use: observegame <GAMEID> to observe the game\n");
+                    "~ Use: observegame <GAME_NUMBER> to observe the game\n");
 
             int index = 1;
             for (var game : games) {
@@ -138,7 +138,6 @@ public class ChessClient {
                 // Retrieve the game list and convert it to a List
                 ListGamesResult listGamesResult = server.listGames();
                 List<GameData> games = new ArrayList<>(listGamesResult.games());
-
 
                 //get the ID of the number of the list
                 GameData selectedGame = games.get(index - 1);
@@ -169,17 +168,20 @@ public class ChessClient {
         return "Failed joining game.";
     }
 
-
     public String observe(String... params) {
         try {
             assertSignedIn();
             if (params.length == 1) {
+                int index = Integer.parseInt(params[0]);
 
-            int gameID = Integer.parseInt(params[0]);
+                ListGamesResult listGamesResult = server.listGames();
+                List<GameData> games = new ArrayList<>(listGamesResult.games());
+                GameData selectedGame = games.get(index - 1);
 
-            board.showBoard(new ChessGame(), null);
 
-            return String.format("Observing game %d", gameID);
+                board.showBoard(selectedGame.game(), null);
+
+                return String.format("Observing game %d", index);
             }
         } catch (Exception e) {
             return "Error: " + e.getMessage();

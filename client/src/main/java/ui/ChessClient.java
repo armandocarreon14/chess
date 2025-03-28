@@ -10,7 +10,6 @@ import java.util.List;
 
 public class ChessClient {
 
-
     private final ServerFacade server;
     private State state = State.SIGNEDOUT;
     private final String serverUrl;
@@ -61,7 +60,7 @@ public class ChessClient {
                 return String.format("You registered and logged in as %s.", username);
             }
         } catch (Exception e) {
-            return "Register error exception: " + e.getMessage();
+            return "Register error exception: username is taken";
         }
         return "Register error";
     }
@@ -76,7 +75,7 @@ public class ChessClient {
             }
         }
         catch (Exception e) {
-            return "Login error exception: " + e.getMessage();
+            return "Incorrect login: Something is wrong with your username or password";
         }
         return "Login error";
     }
@@ -94,7 +93,7 @@ public class ChessClient {
 
             return String.format("Game created successfully: %s\n\n%s", gameName, help());
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Make sure you name the game after using 'creategame'");
         }
     }
 
@@ -131,64 +130,82 @@ public class ChessClient {
 
     public String join(String... params) {
         try {
-            if (params.length == 2) {
-                assertSignedIn();
-                //Join using the number of the list
-                int index = Integer.parseInt(params[0]);
-
-                // Retrieve the game list and convert it to a List
-                ListGamesResult listGamesResult = server.listGames();
-                List<GameData> games = new ArrayList<>(listGamesResult.games());
-
-                //get the ID of the number of the list
-                GameData selectedGame = games.get(index - 1);
-                int gameID = selectedGame.gameID();
-
-                //Join based of the color
-                String colorInput = params[1].toUpperCase();
-                ChessGame.TeamColor playerColor;
-                if ("WHITE".equals(colorInput)) {
-                    playerColor = ChessGame.TeamColor.WHITE;
-                } else if ("BLACK".equals(colorInput)) {
-                    playerColor = ChessGame.TeamColor.BLACK;
-                } else {
-                    return "Error: Use 'WHITE' or 'BLACK'.";
-                }
-
-                // Join the game using the extracted game ID
-                server.join(gameID, playerColor);
-                board.showBoard(new ChessGame(), playerColor);
-
-                return String.format("Joined game %s (Game ID: %d) as the %s player.", selectedGame.gameName(), gameID, playerColor);
+            if (params.length != 2) {
+                return "Error: Use 'joingame <Number> <Color>'\nMake sure to use a number that's listed.";
             }
+
+            assertSignedIn();
+
+            // Parse the game index
+            int index = Integer.parseInt(params[0]);
+
+            // Retrieve the game list and convert it to a List
+            ListGamesResult listGamesResult = server.listGames();
+            List<GameData> games = new ArrayList<>(listGamesResult.games());
+
+            // Check if the index is within the valid range
+            if (index < 1 || index > games.size()) {
+                return "Error: Invalid game number. Choose a valid game from the list.";
+            }
+
+            GameData selectedGame = games.get(index - 1);
+            int gameID = selectedGame.gameID();
+
+            // Validate color input
+            String colorInput = params[1].toUpperCase();
+            ChessGame.TeamColor playerColor;
+            if ("WHITE".equals(colorInput)) {
+                playerColor = ChessGame.TeamColor.WHITE;
+            } else if ("BLACK".equals(colorInput)) {
+                playerColor = ChessGame.TeamColor.BLACK;
+            } else {
+                return "Error: Use 'WHITE' or 'BLACK'.";
+            }
+
+            // Join the game using the extracted game ID
+            server.join(gameID, playerColor);
+            board.showBoard(new ChessGame(), playerColor);
+
+            return String.format("Joined game %s (Game ID: %d) as the %s player.", selectedGame.gameName(), gameID, playerColor);
+
         } catch (NumberFormatException e) {
             return "Error: Game index must be a number.";
         } catch (Exception e) {
-            return "Error exception: " + e.getMessage();
+            return "Error: That color may already be taken.";
         }
-        return "Failed joining game.";
     }
+
 
     public String observe(String... params) {
         try {
             assertSignedIn();
-            if (params.length == 1) {
-                int index = Integer.parseInt(params[0]);
 
-                ListGamesResult listGamesResult = server.listGames();
-                List<GameData> games = new ArrayList<>(listGamesResult.games());
-                GameData selectedGame = games.get(index - 1);
-
-
-                board.showBoard(selectedGame.game(), null);
-
-                return String.format("Observing game %d", index);
+            if (params.length != 1) {
+                return "Missing value: Use 'observe <Number>'\nMake sure to choose a number from the list.";
             }
+
+            int index = Integer.parseInt(params[0]);
+
+            ListGamesResult listGamesResult = server.listGames();
+            List<GameData> games = new ArrayList<>(listGamesResult.games());
+
+            if (index < 1 || index > games.size()) {
+                return "Error: Invalid game number. Choose a number from the list.";
+            }
+
+            GameData selectedGame = games.get(index - 1);
+
+            board.showBoard(selectedGame.game(), ChessGame.TeamColor.WHITE);
+
+            return String.format("Observing game %d", index);
+
+        } catch (NumberFormatException e) {
+            return "Error: Game index must be a number.";
         } catch (Exception e) {
             return "Error: " + e.getMessage();
         }
-        return "Failed observing game";
     }
+
 
     public String logout(String... params) {
         try {

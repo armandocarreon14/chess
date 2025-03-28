@@ -10,6 +10,7 @@ import java.util.List;
 
 public class ChessClient {
 
+
     private final ServerFacade server;
     private State state = State.SIGNEDOUT;
     private final String serverUrl;

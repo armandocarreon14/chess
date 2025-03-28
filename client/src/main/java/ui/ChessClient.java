@@ -50,13 +50,12 @@ public class ChessClient {
             if (params.length == 3) {
                 RegisterResult registerResult = server.register(new RegisterRequest(params[0], params[1], params[2]));
                 String username = registerResult.username();
-
                 // log in after registration
                 server.login(new LoginRequest(params[0], params[1]));
 
                 // Update state to signed in
                 state = State.SIGNEDIN;
-                this.username = username;  // Store the username
+                this.username = username;
 
                 return String.format("You registered and logged in as %s.", username);
             }
@@ -65,7 +64,6 @@ public class ChessClient {
         }
         return "Register error";
     }
-
 
     public String login(String... params) {
         try {
@@ -83,16 +81,20 @@ public class ChessClient {
     }
 
     public String create(String... params) throws Exception {
-        assertSignedIn();
-        if (params.length != 1) {
-            throw new ResponseException(400, "Expected: <game name>");
+        try {
+            assertSignedIn();
+            if (params.length != 1) {
+                throw new ResponseException(400, "Expected: <gamename>");
+            }
+            var gameName = params[0];
+
+            CreateGameRequest createGameRequest = new CreateGameRequest(gameName, null);
+            server.createGame(createGameRequest);
+
+            return String.format("Game created successfully: %s\n\n%s", gameName, help());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-        var gameName = params[0];
-
-        CreateGameRequest createGameRequest = new CreateGameRequest(gameName, null);
-        server.createGame(createGameRequest);
-
-        return String.format("Game created successfully: %s\n\n%s", gameName,help());
     }
 
     public String list(String... params) throws ResponseException {

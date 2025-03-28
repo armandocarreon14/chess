@@ -97,6 +97,7 @@ public class ChessClient {
         }
     }
 
+
     public String list(String... params) throws ResponseException {
         assertSignedIn();
 

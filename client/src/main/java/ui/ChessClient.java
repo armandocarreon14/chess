@@ -1,6 +1,8 @@
 package ui;
 
 import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPosition;
 import exception.ResponseException;
 import model.GameData;
 import requestandresults.*;
@@ -16,12 +18,15 @@ public class ChessClient {
     private final CreateBoard board;
     private String username = null;
     private final String authToken = ServerFacade.authToken;
+    private NotificationHandler notificationHandler;
+    private WebSocketFacade ws;
 
 
     public ChessClient(String serverurl) {
         server = new ServerFacade(serverurl);
         this.serverUrl = serverurl;
         this.board = new CreateBoard();
+        this.notificationHandler = notificationHandler;
     }
 
     public String eval(String input) {
@@ -38,6 +43,14 @@ public class ChessClient {
                 case "joingame" -> join(params);
                 case "logout" -> logout();
                 case "observegame" -> observe(params);
+                case "redraw" -> redraw();
+                case "move" -> movePiece(params);
+                case "highlight" -> highlight(params);
+                case "resign" -> confirmation();
+                case "yes" -> resign();
+                case "no" -> "good choice";
+                case "leave" -> leave();
+
                 default -> help();
             };
         } catch (Exception ex) {
@@ -45,7 +58,53 @@ public class ChessClient {
         }
     }
 
-    public String register(String... params) throws ResponseException {
+    public String redraw() {
+        return "";
+    }
+
+    private ChessPosition parsePosition(String algebraic) {
+        if (algebraic.length() != 2) {
+            throw new IllegalArgumentException("Invalid position: " + algebraic);
+        }
+
+        char file = algebraic.charAt(0); // column, 'a' to 'h'
+        char rank = algebraic.charAt(1); // row, '1' to '8'
+
+        int col = file - 'a' + 1; // convert 'a'-'h' to 1-8
+        int row = Character.getNumericValue(rank); // '1'-'8' → 1-8
+
+        if (col < 1 || col > 8 || row < 1 || row > 8) {
+            throw new IllegalArgumentException("Position out of bounds: " + algebraic);
+        }
+
+        return new ChessPosition(row, col);
+    }
+
+
+    public String movePiece(String... params) throws ResponseException {
+        ws.makeMove(new ChessMove(parsePosition(params[0]), parsePosition(params[1]), null));
+        return "";
+    }
+
+    public String highlight(String... params) {
+        return "";
+    }
+
+    public String confirmation() {
+        return "Are you sure you want to resign?";
+    }
+
+    public String resign() throws ResponseException {
+        ws.resign();
+        return "Thanks for playing!";
+    }
+
+    public String leave() throws ResponseException {
+        ws.leave();
+        return "You have left the game";
+    }
+
+    public String register(String... params)  {
         try {
             if (params.length == 3) {
                 RegisterResult registerResult = server.register(new RegisterRequest(params[0], params[1], params[2]));
@@ -163,6 +222,7 @@ public class ChessClient {
             }
 
             // Join the game using the extracted game ID
+            state = State.GAMEPLAY;
             server.join(gameID, playerColor);
             board.showBoard(new ChessGame(), playerColor);
 
@@ -194,7 +254,7 @@ public class ChessClient {
             }
 
             GameData selectedGame = games.get(index - 1);
-
+            state = State.GAMEPLAY;
             board.showBoard(selectedGame.game(), ChessGame.TeamColor.WHITE);
 
             return String.format("Observing game %d", index);
@@ -223,10 +283,16 @@ public class ChessClient {
     public String help(String... params) {
         if (state == State.SIGNEDOUT) {
             return """
-                    - Register <username> <password> <email>
-                    - Login <username> <password>
-                    - Help
-                    - Quit
+ 
+                    """;
+        } else if (state == State.GAMEPLAY) {
+            return """
+                    - redraw
+                    - move <startposition> <endposition>
+                    - highlight <position>
+                    - resign
+                    - leave
+                    - help
                     """;
         }
         return """

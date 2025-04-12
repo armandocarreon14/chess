@@ -2,102 +2,199 @@ package websocket;
 
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
-
-import dataaccess.DataAccessException;
-import dataaccess.SQLAuth;
-import dataaccess.SQLGame;
-import dataaccess.UserDAO;
+import dataaccess.*;
 import model.AuthData;
 import model.GameData;
+import model.UserData;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.eclipse.jetty.websocket.api.Session;
+import service.userService;
 import websocket.commands.*;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
-import javax.management.Notification;
 import java.io.IOException;
+import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Set;
+
+import static websocket.messages.ServerMessage.ServerMessageType.*;
 
 @WebSocket
 public class WebSocketHandler {
-
+    private final userService service;
     private final ConnectionManager connections = new ConnectionManager();
-    SQLGame games;
+    private SQLGame games;
+    private AuthDAO authDAO;
+    private final Set<Integer> resignedGameIDs = new HashSet<>(); // Track resigned games
 
-
-    @OnWebSocketMessage
-    public void onMessage(Session session, String message) throws DataAccessException {
-        UserGameCommand command = new Gson().fromJson(message, UserGameCommand.class);
-        String user = getUser(command.getAuthToken());
-
+    public WebSocketHandler() throws DataAccessException {
         try {
-            switch (command.getCommandType()) {
-                case CONNECT -> connect(session, user, command.getGameID());
-                case MAKE_MOVE -> makeMove();
-                case LEAVE -> leave(user, command.getGameID());
-                case RESIGN -> resign(user, command);
-            }
+            this.games = new SQLGame();
+            this.service = new userService(new SQLUser(), new SQLAuth(), this.games);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException(401, e.getMessage());
         }
     }
 
-    private String getUser(String authToken) throws DataAccessException {
-        SQLAuth sqlAuth = new SQLAuth();
-        AuthData user = sqlAuth.getAuth(authToken);
-        return user.username();
+    @OnWebSocketMessage
+    public void onMessage(Session session, String message) throws IOException {
+        try {
+            UserGameCommand command = new Gson().fromJson(message, UserGameCommand.class);
+            switch (command.getCommandType()) {
+                case CONNECT -> connect(command.getAuthToken(), command.getGameID(), session);
+                case MAKE_MOVE -> makeMove();
+                case LEAVE -> leave(command.getAuthToken(), command.getGameID(), session);
+                case RESIGN -> resign(command.getAuthToken(), command.getGameID(), session);
+            }
+        } catch (Exception e) {
+            ServerMessage error = new ServerMessage(ERROR, null, null, "Error: " + e.getMessage());
+            session.getRemote().sendString(new Gson().toJson(error));
+        }
     }
 
     private void sendMessage(Session session, ServerMessage message) throws IOException {
         session.getRemote().sendString(new Gson().toJson(message));
     }
 
-    private void connect(Session session, String user, int gameID) throws IOException {
-        connections.add(user, session);
-        var message = String.format("%s has joined", user);
-        var notification = new NotificationMessage(message);
-        LoadGameMessage loadGameMessage = new LoadGameMessage(message);
-        sendMessage(session, loadGameMessage);
-        connections.broadcast(gameID, user, notification);
-        connections.add(user, session);
-
-    }
-
-    private void makeMove () {
-    }
-
-
-    private void leave (String user, int gameID) throws IOException {
-        connections.remove(user);
-        var message = String.format("%s has left", user);
-        var notification = new NotificationMessage(message);
-        connections.broadcast(gameID, user, notification);
-    }
-
-    private void resign(String user, UserGameCommand command) throws DataAccessException, InvalidMoveException, IOException {
-        GameData gameData = games.getGame(command.getGameID());
-
-        boolean isWhite = user.equals(gameData.whiteUsername());
-        boolean isBlack = user.equals(gameData.blackUsername());
-
-        if (!isWhite && !isBlack) {
-            throw new InvalidMoveException("Error: you are an observer");
+    private void connect(String authToken, Integer gameID, Session session) throws IOException, SQLException, DataAccessException {
+        if (gameID == null || authToken == null) {
+            ServerMessage error = new ServerMessage(ERROR, null, null, "Missing gameID or authToken.");
+            sendMessage(session, error);
+            return;
         }
 
+        GameData gameData = service.getGameByID(gameID);
+        if (gameData == null) {
+            ServerMessage error = new ServerMessage(ERROR, null, null, "Invalid gameID.");
+            sendMessage(session, error);
+            return;
+        }
 
-        games.updateGame(gameData);
+        try {
+            UserData userData = service.findUserByToken(authToken);
+            if (userData == null) {
+                ServerMessage error = new ServerMessage(ERROR, null, null, "Invalid authToken.");
+                sendMessage(session, error);
+                return;
+            }
+            String username = userData.username();
 
-        String message = String.format("%s has resigned.", user);
-        NotificationMessage toOthers = new NotificationMessage(message);
-        connections.broadcast(command.getGameID(), user, toOthers);
+            String role = "an observer";
+            if (username.equals(gameData.whiteUsername())) {
+                role = "white";
+            } else if (username.equals(gameData.blackUsername())) {
+                role = "black";
+            }
 
-        NotificationMessage toSelf = new NotificationMessage("You have resigned.");
-        connections.send(user, toSelf);
+            connections.add(authToken, gameID, session);
 
+            String notificationMessage = String.format("%s has joined the game as %s", username, role);
+            ServerMessage notification = new ServerMessage(NOTIFICATION, null, notificationMessage, null);
+            connections.broadcast(gameID, authToken, notification);
 
+            ServerMessage loadGame = new ServerMessage(LOAD_GAME, gameData.game().getBoard(), null, null);
+            sendMessage(session, loadGame);
+        } catch (Exception e) {
+            ServerMessage error = new ServerMessage(ERROR, null, null, "Failed to connect: " + e.getMessage());
+            sendMessage(session, error);
+        }
     }
 
+    private void makeMove() {
+        // TODO: Implement makeMove logic
+    }
 
+    private void leave(String authToken, Integer gameID, Session session) throws IOException {
+        try {
+            if (gameID == null || authToken == null) {
+                ServerMessage error = new ServerMessage(ERROR, null, null, "Missing gameID or authToken.");
+                sendMessage(session, error);
+                return;
+            }
+
+            UserData userData = service.findUserByToken(authToken);
+            if (userData == null) {
+                ServerMessage error = new ServerMessage(ERROR, null, null, "Invalid auth token");
+                sendMessage(session, error);
+                return;
+            }
+            String username = userData.username();
+
+            connections.remove(authToken);
+
+            String message = String.format("%s has left", username);
+            ServerMessage notification = new ServerMessage(NOTIFICATION, null, message, null);
+            System.out.println("Leave: Broadcasting to gameID=" + gameID + ", exclude=" + authToken + ", message=" + message);
+            connections.broadcast(gameID, username, notification);
+        } catch (Exception e) {
+            System.out.println("Leave error for authToken=" + authToken + ": " + e.getMessage());
+            ServerMessage error = new ServerMessage(ERROR, null, null, "Error leaving game: " + e.getMessage());
+            sendMessage(session, error);
+        }
+    }
+
+    private void resign(String authToken, Integer gameID, Session session) throws IOException, InvalidMoveException {
+        String user = null;
+        try {
+            if (gameID == null || authToken == null) {
+                ServerMessage error = new ServerMessage(ERROR, null, null, "Missing gameID or authToken.");
+                sendMessage(session, error);
+                return;
+            }
+
+            GameData gameData = service.getGameByID(gameID);
+            if (gameData == null) {
+                ServerMessage error = new ServerMessage(ERROR, null, null, "Game not found for ID: " + gameID);
+                sendMessage(session, error);
+                return;
+            }
+
+            UserData userData = service.findUserByToken(authToken);
+            if (userData == null) {
+                ServerMessage error = new ServerMessage(ERROR, null, null, "Invalid auth token");
+                sendMessage(session, error);
+                return;
+            }
+            user = userData.username();
+
+            boolean isWhite = user.equals(gameData.whiteUsername());
+            boolean isBlack = user.equals(gameData.blackUsername());
+            if (!isWhite && !isBlack) {
+                throw new InvalidMoveException("Error: you are an observer");
+            }
+
+            if (resignedGameIDs.contains(gameID)) {
+                ServerMessage error = new ServerMessage(ERROR, null, null, "Error: Game is already over");
+                sendMessage(session, error);
+                return;
+            }
+
+            String message = String.format("%s has resigned.", user);
+            ServerMessage toOthers = new ServerMessage(NOTIFICATION, null, message, null);
+            System.out.println("Resign: Broadcasting to gameID=" + gameID + ", exclude=" + authToken + ", message=" + message);
+            connections.broadcast(gameID, authToken, toOthers);
+
+            ServerMessage toSelf = new ServerMessage(NOTIFICATION, null, "You have resigned.", null);
+            System.out.println("Resign: Sending to self, authToken=" + authToken);
+            sendMessage(session, toSelf);
+
+            GameData updatedGame = new GameData(
+                    gameData.gameID(),
+                    gameData.whiteUsername(),
+                    gameData.blackUsername(),
+                    gameData.gameName(),
+                    gameData.game()
+            );
+            games.updateGame(updatedGame);
+
+            resignedGameIDs.add(gameID);
+        } catch (Exception e) {
+            System.out.println("Resign error for user=" + user + ": " + e.getMessage());
+            ServerMessage error = new ServerMessage(ERROR, null, null, "Error processing resignation: " + e.getMessage());
+            sendMessage(session, error);
+        }
+    }
 }

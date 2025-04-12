@@ -6,9 +6,9 @@ public class NotificationMessage extends  ServerMessage{
 
     private String message;
 
-    public NotificationMessage(String message) {
+    public NotificationMessage(String notificationMessage) {
         super(ServerMessageType.NOTIFICATION);
-        this.message = message;
+        this.message = notificationMessage;
     }
 
     public String getGame() {

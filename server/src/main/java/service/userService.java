@@ -1,5 +1,6 @@
 package service;
 
+import model.GameData;
 import org.mindrot.jbcrypt.BCrypt;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
@@ -10,6 +11,7 @@ import model.UserData;
 import requestandresults.*;
 import requestandresults.RegisterResult;
 
+import java.sql.SQLException;
 import java.util.UUID;
 
 public class userService {
@@ -74,6 +76,20 @@ public class userService {
         authDAO.clearAuth(logoutRequest.authToken());
     }
 
+    public GameData getGameByID(int id) throws DataAccessException {
+        for (GameData gameData : gameDAO.listGames()) {
+            if (gameData.gameID() == id){
+                return gameData;
+            }
+        }
+        return null;
+    }
+
+    public UserData findUserByToken(String authToken) throws DataAccessException {
+        AuthData authData = authDAO.getAuth(authToken);
+        String username = authData.username();
+        return userDAO.getUser(username);
+    }
 
     public void clear() throws DataAccessException {
         authDAO.clearAllAuth();

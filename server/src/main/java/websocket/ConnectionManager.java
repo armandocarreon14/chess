@@ -15,10 +15,9 @@ public class ConnectionManager {
     private final Map<String, Session> userSessions = new ConcurrentHashMap<>(); //usernames are stored here
 
 
-    public void add(String user, Session session) {
-        var connection = new Connection(user, session);
-        connections.put(user, connection);
-        userSessions.put(user, session);
+    public void add(String authToken, int gameID, Session session) {
+        var connection = new Connection(authToken, gameID, session);
+        connections.put(authToken, connection);
     }
 
     public void remove(String user) {
@@ -30,7 +29,7 @@ public class ConnectionManager {
         for (var c : connections.values()) {
             if (c.session.isOpen()) {
                 if (!c.user.equals(excluseUser)) {
-                    c.send(notification.toString());
+                    c.send(notification);
                 }
             } else {
                 removeList.add(c);

@@ -17,6 +17,7 @@ import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
+import javax.management.Notification;
 import java.io.IOException;
 
 @WebSocket

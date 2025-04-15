@@ -178,7 +178,7 @@ public class WebSocketHandler {
                 sendMessage(session, new ServerMessage(ERROR, null, null, "Error: you are an observer"));
                 return;
             }
-            //Double resign
+            //Double resign (attempts to resign after other player resigns)
             if (resignedGameIDs.contains(gameID)) {
                 sendMessage(session, new ServerMessage(ERROR, null, null, "Error: Game is already over"));
                 return;

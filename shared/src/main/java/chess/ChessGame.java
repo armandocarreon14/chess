@@ -49,6 +49,15 @@ public class ChessGame {
         setTeamTurn(TeamColor.WHITE);
     }
 
+    public boolean isOver() {
+        return gameOver;
+    }
+
+    // Sets the game over status
+    public void setOver(boolean isOver) {
+        this.gameOver = isOver;
+    }
+
     /**
      * @return Which team's turn it is
      */

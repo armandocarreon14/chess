@@ -1,9 +1,9 @@
 package websocket;
 
+import chess.ChessMove;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.*;
-import model.AuthData;
 import model.GameData;
 import model.UserData;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
@@ -11,9 +11,9 @@ import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.eclipse.jetty.websocket.api.Session;
 import service.userService;
 import websocket.commands.*;
-import websocket.messages.LoadGameMessage;
-import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
+import chess.ChessGame;
+
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -45,7 +45,7 @@ public class WebSocketHandler {
             UserGameCommand command = new Gson().fromJson(message, UserGameCommand.class);
             switch (command.getCommandType()) {
                 case CONNECT -> connect(command.getAuthToken(), command.getGameID(), session);
-                case MAKE_MOVE -> makeMove();
+                case MAKE_MOVE -> makeMove(command.getAuthToken(), command.getGameID(), command.getMove(), session);
                 case LEAVE -> leave(command.getAuthToken(), command.getGameID(), session);
                 case RESIGN -> resign(command.getAuthToken(), command.getGameID(), session);
             }
@@ -60,41 +60,26 @@ public class WebSocketHandler {
     }
 
     private void connect(String authToken, Integer gameID, Session session) throws IOException, SQLException, DataAccessException {
-        if (gameID == null || authToken == null) {
-            ServerMessage error = new ServerMessage(ERROR, null, null, "Missing gameID or authToken.");
-            sendMessage(session, error);
-            return;
-        }
-
         GameData gameData = service.getGameByID(gameID);
         if (gameData == null) {
             ServerMessage error = new ServerMessage(ERROR, null, null, "Invalid gameID.");
             sendMessage(session, error);
             return;
         }
-
         try {
             UserData userData = service.findUserByToken(authToken);
-            if (userData == null) {
-                ServerMessage error = new ServerMessage(ERROR, null, null, "Invalid authToken.");
-                sendMessage(session, error);
-                return;
-            }
-            String username = userData.username();
 
+            String username = userData.username();
             String role = "an observer";
             if (username.equals(gameData.whiteUsername())) {
                 role = "white";
             } else if (username.equals(gameData.blackUsername())) {
                 role = "black";
             }
-
             connections.add(authToken, gameID, session);
-
             String notificationMessage = String.format("%s has joined the game as %s", username, role);
             ServerMessage notification = new ServerMessage(NOTIFICATION, null, notificationMessage, null);
             connections.broadcast(gameID, authToken, notification);
-
             ServerMessage loadGame = new ServerMessage(LOAD_GAME, gameData.game().getBoard(), null, null);
             sendMessage(session, loadGame);
         } catch (Exception e) {
@@ -103,98 +88,91 @@ public class WebSocketHandler {
         }
     }
 
-    private void makeMove() {
-        // TODO: Implement makeMove logic
+    private void makeMove(String authToken, Integer gameID, ChessMove move, Session session) throws IOException {
+        try {
+
+            GameData gameData = service.getGameByID(gameID);
+            UserData userData = service.findUserByToken(authToken);
+
+            String username = userData.username();
+            ChessGame game = gameData.game();
+
+            boolean isWhite = username.equals(gameData.whiteUsername());
+            boolean isBlack = username.equals(gameData.blackUsername());
+            if (!isWhite && !isBlack) {
+                sendMessage(session, new ServerMessage(ERROR, null, null, "Error: Observers cannot make moves"));
+                return;
+            }
+
+            ChessGame.TeamColor color = isWhite ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
+
+            //Make move for opponent
+            if (game.getTeamTurn() != color) {
+                sendMessage(session, new ServerMessage(ERROR, null, null, "Error: Not your turn"));
+                return;
+            }
+
+            //Make invalid move
+            try {
+                game.makeMove(move);
+            } catch (InvalidMoveException e) {
+                sendMessage(session, new ServerMessage(ERROR, null, null, "Error: Invalid move"));
+                return;
+            }
+
+            //Normal Make Move
+            ServerMessage loadGame = new ServerMessage(LOAD_GAME, game.getBoard(), null, null);
+            sendMessage(session, loadGame);
+            connections.broadcast(gameID, authToken, loadGame);
+
+            //Message
+            String moveText = username + " moved from " + move.getStartPosition() + " to " + move.getEndPosition();
+            ServerMessage moveNotification = new ServerMessage(NOTIFICATION, null, moveText, null);
+            connections.broadcast(gameID, authToken, moveNotification);
+
+            ChessGame.TeamColor opponent = (color == ChessGame.TeamColor.WHITE) ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
+
+        } catch (Exception e) {
+            sendMessage(session, new ServerMessage(ERROR, null, null, "Error processing move: " + e.getMessage()));
+        }
     }
+
 
     private void leave(String authToken, Integer gameID, Session session) throws IOException {
         try {
-            if (gameID == null || authToken == null) {
-                ServerMessage error = new ServerMessage(ERROR, null, null, "Missing gameID or authToken.");
-                sendMessage(session, error);
-                return;
-            }
-
             UserData userData = service.findUserByToken(authToken);
-            if (userData == null) {
-                ServerMessage error = new ServerMessage(ERROR, null, null, "Invalid auth token");
-                sendMessage(session, error);
-                return;
-            }
             String username = userData.username();
-
             connections.remove(authToken);
-
             String message = String.format("%s has left", username);
             ServerMessage notification = new ServerMessage(NOTIFICATION, null, message, null);
-            System.out.println("Leave: Broadcasting to gameID=" + gameID + ", exclude=" + authToken + ", message=" + message);
-            connections.broadcast(gameID, username, notification);
+            connections.broadcast(gameID, authToken, notification);
         } catch (Exception e) {
-            System.out.println("Leave error for authToken=" + authToken + ": " + e.getMessage());
             ServerMessage error = new ServerMessage(ERROR, null, null, "Error leaving game: " + e.getMessage());
             sendMessage(session, error);
         }
     }
 
-    private void resign(String authToken, Integer gameID, Session session) throws IOException, InvalidMoveException {
-        String user = null;
+    private void resign(String authToken, Integer gameID, Session session) throws IOException {
         try {
-            if (gameID == null || authToken == null) {
-                ServerMessage error = new ServerMessage(ERROR, null, null, "Missing gameID or authToken.");
-                sendMessage(session, error);
-                return;
-            }
-
             GameData gameData = service.getGameByID(gameID);
-            if (gameData == null) {
-                ServerMessage error = new ServerMessage(ERROR, null, null, "Game not found for ID: " + gameID);
-                sendMessage(session, error);
-                return;
-            }
-
             UserData userData = service.findUserByToken(authToken);
-            if (userData == null) {
-                ServerMessage error = new ServerMessage(ERROR, null, null, "Invalid auth token");
-                sendMessage(session, error);
+            String user = userData.username();
+            //OBSERVER RESIGN
+            if (!user.equals(gameData.whiteUsername()) && !user.equals(gameData.blackUsername())) {
+                sendMessage(session, new ServerMessage(ERROR, null, null, "Error: you are an observer"));
                 return;
             }
-            user = userData.username();
-
-            boolean isWhite = user.equals(gameData.whiteUsername());
-            boolean isBlack = user.equals(gameData.blackUsername());
-            if (!isWhite && !isBlack) {
-                throw new InvalidMoveException("Error: you are an observer");
-            }
-
+            //DOUBLE RESIGN
             if (resignedGameIDs.contains(gameID)) {
-                ServerMessage error = new ServerMessage(ERROR, null, null, "Error: Game is already over");
-                sendMessage(session, error);
+                sendMessage(session, new ServerMessage(ERROR, null, null, "Error: Game is already over"));
                 return;
             }
-
-            String message = String.format("%s has resigned.", user);
-            ServerMessage toOthers = new ServerMessage(NOTIFICATION, null, message, null);
-            System.out.println("Resign: Broadcasting to gameID=" + gameID + ", exclude=" + authToken + ", message=" + message);
-            connections.broadcast(gameID, authToken, toOthers);
-
-            ServerMessage toSelf = new ServerMessage(NOTIFICATION, null, "You have resigned.", null);
-            System.out.println("Resign: Sending to self, authToken=" + authToken);
-            sendMessage(session, toSelf);
-
-            GameData updatedGame = new GameData(
-                    gameData.gameID(),
-                    gameData.whiteUsername(),
-                    gameData.blackUsername(),
-                    gameData.gameName(),
-                    gameData.game()
-            );
-            games.updateGame(updatedGame);
-
+            connections.broadcast(gameID, authToken, new ServerMessage(NOTIFICATION, null, user + " has resigned.", null));
+            sendMessage(session, new ServerMessage(NOTIFICATION, null, "You have resigned.", null));
+            games.updateGame(new GameData(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), gameData.game()));
             resignedGameIDs.add(gameID);
         } catch (Exception e) {
-            System.out.println("Resign error for user=" + user + ": " + e.getMessage());
-            ServerMessage error = new ServerMessage(ERROR, null, null, "Error processing resignation: " + e.getMessage());
-            sendMessage(session, error);
+            sendMessage(session, new ServerMessage(ERROR, null, null, "Error processing resignation: " + e.getMessage()));
         }
     }
 }

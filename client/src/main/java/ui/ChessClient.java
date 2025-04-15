@@ -19,7 +19,7 @@ public class ChessClient {
     private String username = null;
     private final String authToken = ServerFacade.authToken;
     private NotificationHandler notificationHandler;
-    private WebSocketFacade ws;
+    private WebSocketFacade webSocketFacade;
 
 
     public ChessClient(String serverurl) {
@@ -82,7 +82,7 @@ public class ChessClient {
 
 
     public String movePiece(String... params) throws ResponseException {
-        ws.makeMove(new ChessMove(parsePosition(params[0]), parsePosition(params[1]), null));
+        webSocketFacade.makeMove(new ChessMove(parsePosition(params[0]), parsePosition(params[1]), null));
         return "";
     }
 
@@ -91,16 +91,16 @@ public class ChessClient {
     }
 
     public String confirmation() {
-        return "Are you sure you want to resign?";
+        return "Are you sure you want to resign? Yes/No";
     }
 
     public String resign() throws ResponseException {
-        ws.resign();
+        webSocketFacade.resign();
         return "Thanks for playing!";
     }
 
     public String leave() throws ResponseException {
-        ws.leave();
+        webSocketFacade.leave();
         return "You have left the game";
     }
 
@@ -223,10 +223,12 @@ public class ChessClient {
 
             // Join the game using the extracted game ID
             state = State.GAMEPLAY;
+            webSocketFacade = new WebSocketFacade(serverUrl, notificationHandler);
             server.join(gameID, playerColor);
             board.showBoard(new ChessGame(), playerColor);
 
-            return String.format("Joined game %s (Game ID: %d) as the %s player.", selectedGame.gameName(), gameID, playerColor);
+            return String.format("Joined game %s (Game ID: %d) as the %s player. Use the help command if you need help"
+                    , selectedGame.gameName(), gameID, playerColor);
 
         } catch (NumberFormatException e) {
             return "Error: Game index must be a number.";
@@ -255,6 +257,7 @@ public class ChessClient {
 
             GameData selectedGame = games.get(index - 1);
             state = State.GAMEPLAY;
+            webSocketFacade = new WebSocketFacade(serverUrl, notificationHandler);
             board.showBoard(selectedGame.game(), ChessGame.TeamColor.WHITE);
 
             return String.format("Observing game %d", index);
@@ -283,7 +286,10 @@ public class ChessClient {
     public String help(String... params) {
         if (state == State.SIGNEDOUT) {
             return """
- 
+                     - Register <username> <password> <email>
+                    - Login <username> <password>
+                    - Help
+                    - Quit
                     """;
         } else if (state == State.GAMEPLAY) {
             return """

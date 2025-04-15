@@ -2,7 +2,6 @@ package websocket;
 
 import com.google.gson.Gson;
 import org.eclipse.jetty.websocket.api.Session;
-import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
 import java.io.IOException;
@@ -13,7 +12,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ConnectionManager {
     public final ConcurrentHashMap<String, Connection> connections = new ConcurrentHashMap<>();
     private final Map<String, Session> userSessions = new ConcurrentHashMap<>(); //usernames are stored here
-
 
     public void add(String authToken, int gameID, Session session) {
         var connection = new Connection(authToken, gameID, session);
@@ -35,7 +33,6 @@ public class ConnectionManager {
                 removeList.add(c);
             }
         }
-
         // Clean up any connections that were left open.
         for (var c : removeList) {
             connections.remove(c.user);
@@ -48,7 +45,4 @@ public class ConnectionManager {
             session.getRemote().sendString(new Gson().toJson(message));
         }
     }
-
-
-
 }

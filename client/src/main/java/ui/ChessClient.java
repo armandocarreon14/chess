@@ -62,27 +62,8 @@ public class ChessClient {
         return "";
     }
 
-    private ChessPosition parsePosition(String algebraic) {
-        if (algebraic.length() != 2) {
-            throw new IllegalArgumentException("Invalid position: " + algebraic);
-        }
-
-        char file = algebraic.charAt(0); // column, 'a' to 'h'
-        char rank = algebraic.charAt(1); // row, '1' to '8'
-
-        int col = file - 'a' + 1; // convert 'a'-'h' to 1-8
-        int row = Character.getNumericValue(rank); // '1'-'8' → 1-8
-
-        if (col < 1 || col > 8 || row < 1 || row > 8) {
-            throw new IllegalArgumentException("Position out of bounds: " + algebraic);
-        }
-
-        return new ChessPosition(row, col);
-    }
-
 
     public String movePiece(String... params) throws ResponseException {
-        webSocketFacade.makeMove(new ChessMove(parsePosition(params[0]), parsePosition(params[1]), null));
         return "";
     }
 
@@ -143,7 +124,7 @@ public class ChessClient {
         try {
             assertSignedIn();
             if (params.length != 1) {
-                throw new ResponseException(400, "Expected: <gamename>");
+                throw new ResponseException(400, "Expected: <GameName>");
             }
             var gameName = params[0];
 

@@ -139,7 +139,23 @@ public class WebSocketHandler {
         try {
             UserData userData = service.findUserByToken(authToken);
             String username = userData.username();
-            //Leave game
+            GameData gameData = service.getGameByID(gameID);
+
+            // Declare variables for updating data
+            String newWhiteUsername = username.equals(gameData.whiteUsername()) ? null : gameData.whiteUsername();
+            String newBlackUsername = username.equals(gameData.blackUsername()) ? null : gameData.blackUsername();
+
+            // Update GameData
+            GameData updatedGame = new GameData(
+                    gameData.gameID(),
+                    newWhiteUsername,
+                    newBlackUsername,
+                    gameData.gameName(),
+                    gameData.game()
+            );
+            games.updateGame(updatedGame);
+
+            // Leave game and notify others
             connections.remove(authToken);
             String message = String.format("%s has left", username);
             ServerMessage notification = new ServerMessage(NOTIFICATION, null, message, null);

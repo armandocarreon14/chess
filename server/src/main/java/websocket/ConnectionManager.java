@@ -26,7 +26,7 @@ public class ConnectionManager {
         var removeList = new ArrayList<Connection>();
         for (var c : connections.values()) {
             if (c.session.isOpen()) {
-                if (!c.user.equals(excluseUser)) {
+                if (c.gameID == GameID && !c.user.equals(excluseUser)) {
                     c.send(notification);
                 }
             } else {
@@ -39,10 +39,4 @@ public class ConnectionManager {
         }
     }
 
-    public void send(String username, ServerMessage message) throws IOException {
-        Session session = userSessions.get(username);
-        if (session != null && session.isOpen()) {
-            session.getRemote().sendString(new Gson().toJson(message));
-        }
-    }
 }

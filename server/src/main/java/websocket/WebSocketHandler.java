@@ -14,9 +14,7 @@ import websocket.commands.*;
 import websocket.messages.ServerMessage;
 import chess.ChessGame;
 
-
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -27,7 +25,6 @@ public class WebSocketHandler {
     private final userService service;
     private final ConnectionManager connections = new ConnectionManager();
     private SQLGame games;
-    private AuthDAO authDAO;
     private final Set<Integer> resignedGameIDs = new HashSet<>(); // Track resigned games
 
     public WebSocketHandler() throws DataAccessException {
@@ -59,7 +56,7 @@ public class WebSocketHandler {
         session.getRemote().sendString(new Gson().toJson(message));
     }
 
-    private void connect(String authToken, Integer gameID, Session session) throws IOException, SQLException, DataAccessException {
+    private void connect(String authToken, Integer gameID, Session session) throws IOException, DataAccessException {
         GameData gameData = service.getGameByID(gameID);
         if (gameData == null) {
             ServerMessage error = new ServerMessage(ERROR, null, null, "Invalid gameID.");
@@ -97,13 +94,14 @@ public class WebSocketHandler {
             String username = userData.username();
             ChessGame game = gameData.game();
 
-            boolean isWhite = username.equals(gameData.whiteUsername());
-            boolean isBlack = username.equals(gameData.blackUsername());
-            if (!isWhite && !isBlack) {
-                sendMessage(session, new ServerMessage(ERROR, null, null, "Error: Observers cannot make moves"));
+            //Cannot move after resign
+            if (resignedGameIDs.contains(gameID)) {
+                sendMessage(session, new ServerMessage(ERROR, null, null, "Game is already over."));
                 return;
             }
 
+            //Declare color
+            boolean isWhite = username.equals(gameData.whiteUsername());
             ChessGame.TeamColor color = isWhite ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
 
             //Make move for opponent
@@ -120,6 +118,8 @@ public class WebSocketHandler {
                 return;
             }
 
+            games.updateGame(new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game));
+
             //Normal Make Move
             ServerMessage loadGame = new ServerMessage(LOAD_GAME, game.getBoard(), null, null);
             sendMessage(session, loadGame);
@@ -130,18 +130,16 @@ public class WebSocketHandler {
             ServerMessage moveNotification = new ServerMessage(NOTIFICATION, null, moveText, null);
             connections.broadcast(gameID, authToken, moveNotification);
 
-            ChessGame.TeamColor opponent = (color == ChessGame.TeamColor.WHITE) ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
-
         } catch (Exception e) {
-            sendMessage(session, new ServerMessage(ERROR, null, null, "Error processing move: " + e.getMessage()));
+            sendMessage(session, new ServerMessage(ERROR, null, null, "Invalid move: " + e.getMessage()));
         }
     }
-
 
     private void leave(String authToken, Integer gameID, Session session) throws IOException {
         try {
             UserData userData = service.findUserByToken(authToken);
             String username = userData.username();
+            //Leave game
             connections.remove(authToken);
             String message = String.format("%s has left", username);
             ServerMessage notification = new ServerMessage(NOTIFICATION, null, message, null);
@@ -154,21 +152,26 @@ public class WebSocketHandler {
 
     private void resign(String authToken, Integer gameID, Session session) throws IOException {
         try {
+
             GameData gameData = service.getGameByID(gameID);
             UserData userData = service.findUserByToken(authToken);
             String user = userData.username();
-            //OBSERVER RESIGN
+
+            //Observer resign
             if (!user.equals(gameData.whiteUsername()) && !user.equals(gameData.blackUsername())) {
                 sendMessage(session, new ServerMessage(ERROR, null, null, "Error: you are an observer"));
                 return;
             }
-            //DOUBLE RESIGN
+            //Double resign
             if (resignedGameIDs.contains(gameID)) {
                 sendMessage(session, new ServerMessage(ERROR, null, null, "Error: Game is already over"));
                 return;
             }
+            //Normal resign
             connections.broadcast(gameID, authToken, new ServerMessage(NOTIFICATION, null, user + " has resigned.", null));
             sendMessage(session, new ServerMessage(NOTIFICATION, null, "You have resigned.", null));
+
+            //Cannot move after resign
             games.updateGame(new GameData(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), gameData.game()));
             resignedGameIDs.add(gameID);
         } catch (Exception e) {
